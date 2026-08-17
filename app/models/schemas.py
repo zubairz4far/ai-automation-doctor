@@ -80,3 +80,26 @@ class ApprovalRecord(BaseModel):
     approved: bool
     approved_by: str
     note: str | None = None
+
+
+class WorkflowDryRunRequest(BaseModel):
+    workflow: dict[str, Any]
+
+
+class WorkflowPatchChange(BaseModel):
+    node_name: str
+    path: str
+    before: Any = None
+    after: Any
+    reason: str
+
+
+class WorkflowDryRunResponse(BaseModel):
+    proposal_id: str
+    workflow_id: str
+    valid: bool = True
+    target_nodes: list[str]
+    changes: list[WorkflowPatchChange]
+    structural_fingerprint_before: str
+    structural_fingerprint_after: str
+    validation_notes: list[str]
