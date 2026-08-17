@@ -1,10 +1,23 @@
 # AI Automation Doctor
 
-**v0.4.0** — an evaluated reliability system for failed automations, starting with n8n.
+**v1.0.0** — a production-shaped reliability service for failed n8n automations.
 
-AI Automation Doctor ingests failed n8n executions, converts them into privacy-minimized incidents, classifies root cause and retry safety, proposes narrowly constrained retry patches, validates them against real workflow structure, binds human approval to an exact workflow snapshot, and now implements a guarded **apply → retry → verify** path.
+AI Automation Doctor turns failed n8n executions into privacy-minimized incidents, classifies likely root cause and retry safety, proposes a narrowly constrained retry patch, validates it against the current workflow, binds explicit human approval to the exact validated snapshot, and can execute a guarded **apply → verify → retry → verify** flow.
 
-Both workflow mutation and execution retry remain **disabled by default**. The mutation-capable path has been validated with deterministic mocks and CI; this repository does not claim that a live production n8n workflow was mutated during the benchmark.
+The v1 release adds durable SQLite state, idempotent repeat handling, crash-safe recovery, a persisted incident timeline, readiness/metrics endpoints, and an authenticated operator boundary. Workflow mutation and execution retry remain **disabled by default**.
+
+## What this project demonstrates
+
+- FastAPI service design around a real external automation platform
+- deterministic failure diagnosis with measured regression suites
+- privacy-minimized n8n execution ingestion
+- workflow-aware structural validation rather than free-form JSON editing
+- human-in-the-loop approval bound to `versionId` + SHA-256 snapshot evidence
+- deny-by-default mutation policy
+- durable remediation state and append-only operational timeline
+- concurrency leases and idempotent completed-request replay
+- crash recovery without blindly repeating workflow writes or retries
+- Docker packaging, health/readiness, low-cardinality metrics, and CI safety gates
 
 ## Architecture
 
@@ -21,128 +34,86 @@ deterministic diagnosis + retry-safety classifier
 constrained retry patch proposal
         |
         v
-deny-by-default patch validator
+deny-by-default validator
         |
         v
-current n8n workflow fetch
+current workflow fetch
         |
         v
 workflow-aware dry run on deep copy
         |
-        +--> exact versionId
-        +--> SHA-256 snapshot fingerprint
-        +--> protected structural fingerprint
+        +--> versionId
+        +--> full snapshot SHA-256
+        +--> protected-structure fingerprint
         +--> safe before/after diff
         |
         v
-human approval bound to that exact snapshot
+human approval bound to exact validated snapshot
         |
         v
-apply preflight
-        |
-        +--> mutation gate enabled?
-        +--> retry gate enabled?
-        +--> current version still matches?
-        +--> current snapshot still matches?
+SQLite remediation lease + durable stage record
         |
         v
-server-side patch rebuild
-        |
-        v
-write-safe n8n workflow serialization
+stale-state preflight + server-side patch rebuild
         |
         v
 PUT workflow with publishIfActive=false
         |
         v
-refetch + persistence/invariant verification
+refetch + exact writable-definition verification
         |
         v
-retry failed execution once with loadWorkflow=true
+retry original execution with loadWorkflow=true
         |
         v
-fetch retry execution once
+verify retry execution
         |
-        +--> success
-        +--> failure
-        +--> pending
+        +--> success / failure / pending
+        |
+        v
+persist timeline + idempotent result
 ```
-
-## Completed milestones
-
-### v0.2.0 — real n8n execution ingestion
-
-- normalizes `data.resultData.error` and `lastNodeExecuted`
-- falls back to per-node `runData` errors
-- supports API-style and UI-style n8n failure exports
-- exposes raw-payload ingestion and configured execution-fetch analysis endpoints
-- requests execution-data redaction on detailed fetches
-- excludes credentials, full workflow bodies, and raw execution items from normalized incidents
-- gives explicit HTTP status and transport signals precedence over ambiguous message text
-- fails ambiguous failures closed to `unknown`
-- includes a 64-case adversarial diagnosis benchmark
-
-### v0.3.0 — workflow-aware dry-run patching
-
-The current n8n node schema exposes `retryOnFail`, `maxTries`, and `waitBetweenTries` as node-level fields. The Doctor's mutation allowlist is limited to those fields.
-
-- logical node addressing with JSON Pointer escaping
-- unique target resolution against n8n's array-based `nodes`
-- patch application to a deep copy only
-- strict retry bounds and types
-- single-target-node policy
-- workflow-ID and duplicate-node rejection
-- protected connections/settings and all non-target nodes
-- protected target-node credentials, parameters, identity, type/version, position, and webhook ID
-- structural fingerprint before/after must match
-- safe diff returned without returning a patched credential-bearing workflow body
-- 22-case unsafe-patch trap benchmark
-
-### v0.4.0 — controlled apply, retry, and verification
-
-- server-side dry-run endpoint can fetch the current workflow directly from n8n
-- every stored dry run records the workflow `versionId` and SHA-256 of the exact workflow snapshot
-- human approval is impossible before a successful dry run
-- approval records are bound to that exact version and fingerprint
-- a new dry run invalidates any previous approval
-- current workflow is fetched again immediately before mutation
-- changed `versionId` blocks mutation
-- same-version but changed snapshot also blocks mutation
-- patch is rebuilt server-side from the current n8n workflow; no client-supplied patched body is trusted for write-back
-- update body is reconstructed from an explicit public-workflow field allowlist
-- workflow and node read-only metadata are stripped before update
-- workflow mutation and execution retry have independent hard gates, both preflighted before the first write
-- update always uses `publishIfActive=false`
-- persisted writable workflow definition must match the approved update before retry
-- protected workflow structure is verified again after persistence
-- original failed execution is retried exactly once with `loadWorkflow=true`
-- retry execution is fetched once and reported as `success`, `failure`, or `pending`
-- 10-case remediation state-machine benchmark enforces zero unsafe writes and zero unsafe retries
 
 ## Safety contract
 
+The automatic mutation surface is intentionally small.
+
+Only one uniquely resolved n8n node may be changed, and only these node-level retry fields are allowlisted:
+
+- `retryOnFail` — may only be enabled
+- `maxTries` — bounded to 1–5
+- `waitBetweenTries` — bounded to 250–60000 ms
+
+Credentials, node identity/type/version, URLs, bodies, expressions, code/commands, workflow connections, workflow settings, and unrelated node parameters are outside the automatic patch allowlist.
+
+Additional controls:
+
 - `ALLOW_WORKFLOW_MUTATION=false` by default
 - `ALLOW_EXECUTION_RETRY=false` by default
-- both gates must be enabled before the first workflow write
-- every mutation requires a successful dry run followed by explicit human approval
-- approval is tied to one exact workflow version and snapshot
-- stale workflows require a new dry run and new approval
-- auto-apply is forbidden by the patch policy
-- one patch may target exactly one node
-- only node-level `retryOnFail`, `maxTries`, and `waitBetweenTries` are mutable
-- `retryOnFail` may only be enabled
-- `maxTries` is bounded to 1–5
-- `waitBetweenTries` is bounded to 250–60000 ms
-- credentials, node type/version, arbitrary URLs, bodies, expressions, code/commands, workflow connections, and settings are outside the patch allowlist
-- persisted workflow mismatch blocks execution retry
-- updates are saved with `publishIfActive=false`, avoiding silent re-publication of an active workflow
-- retry explicitly uses the newly saved workflow with `loadWorkflow=true`
-- authentication, mapping, configuration, webhook, and unknown failures receive no automatic retry proposal
-- ambiguous diagnosis fails closed to `unknown`
+- both side-effect gates are preflighted before the first write
+- enabling either gate requires `OPERATOR_TOKEN` for `/approve` and `/apply-retry`
+- approval is impossible before a successful dry run
+- a new dry run invalidates the previous approval
+- approval is bound to the exact workflow version and snapshot fingerprint
+- changed or ambiguous workflow state fails closed
+- workflow updates always use `publishIfActive=false`
+- retry starts only after exact persistence + protected-structure verification
+- raw input/workflow snapshots are never persisted to SQLite
+- completed remediation requests replay their persisted result without another write or retry
 
-## API
+See [`SECURITY.md`](SECURITY.md) for deployment guidance and recovery semantics.
 
-Run locally:
+## Durable recovery semantics
+
+v1 stores incidents, patch proposals, validated dry runs, approvals, timeline events, and remediation stages in SQLite.
+
+A per-proposal database lease blocks concurrent remediation attempts. Before each dangerous boundary, state is persisted. Recovery behavior is conservative:
+
+- **process stops around workflow update:** the Doctor compares the current n8n writable workflow definition with the approved expected fingerprint. If the approved update already persisted, it continues without another update. If the workflow is still the exact approved original, it may safely continue the normal path. Anything else stops as stale/ambiguous.
+- **process stops after retry may have been requested:** the Doctor looks for an n8n execution whose `retryOf` references the original execution. If that evidence exists, it resumes verification using that execution. If it cannot prove whether a retry already happened, it stops for manual reconciliation instead of risking a duplicate execution.
+- **completed request repeated:** the persisted result is returned with `idempotent_replay=true`; no external side effect is repeated.
+
+## Local setup
 
 ```bash
 cp .env.example .env
@@ -150,19 +121,59 @@ pip install -e ".[dev]"
 uvicorn app.main:app --reload
 ```
 
-Health exposes both side-effect gates:
+Default configuration keeps all side effects off:
+
+```env
+ALLOW_WORKFLOW_MUTATION=false
+ALLOW_EXECUTION_RETRY=false
+STATE_DB_PATH=./data/ai-automation-doctor.db
+```
+
+For an explicitly enabled remediation deployment:
+
+```env
+N8N_BASE_URL=https://your-n8n.example.com
+N8N_API_KEY=replace-me
+ALLOW_WORKFLOW_MUTATION=true
+ALLOW_EXECUTION_RETRY=true
+OPERATOR_TOKEN=use-a-long-random-secret
+STATE_DB_PATH=./data/ai-automation-doctor.db
+```
+
+Protect the service with TLS/network controls and use a currently patched n8n release before enabling side effects.
+
+## Docker
+
+```bash
+docker build -t ai-automation-doctor:1.0.0 .
+docker run --rm -p 8000:8000 \
+  -v doctor-data:/app/data \
+  --env-file .env \
+  ai-automation-doctor:1.0.0
+```
+
+The SQLite path must live on persistent storage if restart recovery is required.
+
+## API flow
+
+### Health, readiness, metrics
 
 ```bash
 curl http://localhost:8000/health
+curl http://localhost:8000/ready
+curl http://localhost:8000/metrics
+curl http://localhost:8000/v1/stats
 ```
 
-### 1. Analyze an n8n failure
+### 1. Analyze a failed execution
+
+Configured n8n fetch:
 
 ```bash
 curl -X POST http://localhost:8000/v1/incidents/n8n/<execution-id>/analyze
 ```
 
-Or ingest a raw failed-execution payload:
+Or ingest an already retrieved n8n failure payload:
 
 ```bash
 curl -X POST http://localhost:8000/v1/incidents/ingest/n8n \
@@ -170,114 +181,75 @@ curl -X POST http://localhost:8000/v1/incidents/ingest/n8n \
   --data @failed-execution.json
 ```
 
-### 2. Dry-run against the current n8n workflow
+### 2. Dry-run the proposed patch against the current n8n workflow
 
 ```bash
 curl -X POST http://localhost:8000/v1/patches/<proposal-id>/dry-run/n8n
 ```
 
-This fetches the current workflow server-side and stores its version/fingerprint with the validated diff.
+The response contains only the validated diff and fingerprints, not a credential-bearing patched workflow body.
 
-A local/client-provided workflow dry-run endpoint also remains available for development:
+### 3. Approve
 
-```bash
-curl -X POST http://localhost:8000/v1/patches/<proposal-id>/dry-run \
-  -H 'content-type: application/json' \
-  --data @workflow-request.json
-```
-
-### 3. Approve the validated snapshot
+When side-effect gates are enabled, send the operator token:
 
 ```bash
 curl -X POST http://localhost:8000/v1/patches/<proposal-id>/approve \
   -H 'content-type: application/json' \
+  -H 'x-doctor-operator-token: <operator-token>' \
   -d '{"approved_by":"human-operator","note":"Reviewed retry-only diff"}'
 ```
 
-Approval before dry-run returns a conflict. A later dry-run invalidates the previous approval.
-
-### 4. Controlled apply + retry
-
-This endpoint remains inert until both side-effect gates are explicitly enabled:
+### 4. Apply + retry + verify
 
 ```bash
-ALLOW_WORKFLOW_MUTATION=true
-ALLOW_EXECUTION_RETRY=true
+curl -X POST http://localhost:8000/v1/patches/<proposal-id>/apply-retry \
+  -H 'x-doctor-operator-token: <operator-token>'
 ```
 
-Then:
+### 5. Read the durable audit timeline
 
 ```bash
-curl -X POST http://localhost:8000/v1/patches/<proposal-id>/apply-retry
+curl http://localhost:8000/v1/patches/<proposal-id>/timeline
 ```
-
-The server refetches the workflow, rejects stale state, reconstructs the patch itself, saves a draft-only update, verifies persistence and structural invariants, retries the original failed execution once, and returns the first verification result.
 
 ## Measured evaluation
 
-### Failure diagnosis
+The current v1 candidate passed **46 automated tests** in GitHub Actions while retaining all earlier safety benchmarks.
 
-| Suite | Cases | Classification accuracy | Retry-safety accuracy |
-|---|---:|---:|---:|
-| Taxonomy V1 smoke | 9 | 100% | 100% |
-| Taxonomy V2 hard suite | 64 | **100%** | **100%** |
+| Suite | Cases | Result |
+|---|---:|---:|
+| Taxonomy V1 smoke | 9 | **100% classification + retry-safety** |
+| Taxonomy V2 hard | 64 | **100% classification + retry-safety** |
+| Patch Safety V1 | 22 | **100% decisions, 0% unsafe false accepts** |
+| Remediation Safety V1 | 10 | **100% state-machine decisions, 0% unsafe writes, 0% unsafe retries** |
 
-### Patch safety
+The v1-specific regression set additionally covers durable restart recovery, SQLite lease concurrency, idempotent completed replay, workflow-write crash recovery, retry crash recovery using `retryOf`, fail-closed ambiguous retry recovery, durable snapshot privacy, operator authentication, and metadata-only retry lookup.
 
-| Suite | Cases | Safe cases | Unsafe traps | Decision accuracy | Unsafe false accepts | Safe false rejects |
-|---|---:|---:|---:|---:|---:|---:|
-| Patch Safety V1 | 22 | 3 | 19 | **100%** | **0%** | **0%** |
+These are bounded deterministic regression results. The datasets are synthetic/hand-labeled and remediation is exercised with mocks. They do **not** claim universal correctness for every n8n node, third-party API, distributed concurrency condition, or infrastructure failure, and this repository does not claim that its benchmark modified a live production n8n workflow.
 
-### Remediation safety
+## CI release gates
 
-| Suite | Cases | State-machine accuracy | Unsafe workflow writes | Unsafe execution retries |
-|---|---:|---:|---:|---:|
-| Remediation Safety V1 | 10 | **100%** | **0%** | **0%** |
-
-The remediation suite covers successful verification, failed retry, pending retry, stale version, stale same-version snapshot, mutation gate disabled, retry gate disabled, missing dry run, missing approval, and persistence mismatch.
-
-Measured in GitHub Actions run `32013203023` on commit `94ed1805e829984e331290a4d111787dc38c5112`. That run also reported **36 tests passed**, retained the 9/9 and 64/64 diagnosis gates, retained Patch Safety V1 at 22/22, and built the production Docker image successfully.
-
-Durable machine-readable summaries:
-
-- `evals/results/taxonomy_v2_summary.json`
-- `evals/results/patch_safety_v1_summary.json`
-- `evals/results/remediation_safety_v1_summary.json`
-
-These are bounded regression results. The datasets are deterministic, synthetic/hand-labeled, and the remediation path is exercised with mocks rather than a live production n8n instance. They do not establish universal safety under every concurrency, network, node-specific, or third-party failure mode.
-
-## CI
-
-Every push and pull request gates:
+Every push and pull request runs:
 
 1. package installation
 2. Ruff linting
-3. unit/API/integration tests
-4. 9-case Taxonomy V1
-5. 64-case hard Taxonomy V2
-6. 22-case Patch Safety V1 with required 0% unsafe false accepts
-7. 10-case Remediation Safety V1 with required 0% unsafe writes and 0% unsafe retries
-8. production Docker image build
+3. full pytest suite
+4. dedicated durability/recovery/security regression set
+5. 9-case Taxonomy V1
+6. 64-case hard Taxonomy V2
+7. 22-case Patch Safety V1 with zero unsafe false accepts
+8. 10-case Remediation Safety V1 with zero unsafe writes/retries
+9. production Docker image build
 
-## Current limitations
+## Operational limitations
 
-- proposal, dry-run, and approval state is currently in process memory; a restart loses it
-- the apply endpoint does not yet have a persistent idempotency record, so production exactly-once semantics are not claimed
-- a crash or network failure after the workflow update but before retry needs durable recovery state
-- retry verification performs one immediate read; a still-running execution is returned as `pending` rather than polled in the background
-- the write serializer tracks the current n8n public API contract and should remain contract-tested as n8n evolves
-- no live n8n production workflow was mutated as part of the committed benchmark
-- diagnosis is still deterministic; model-assisted diagnosis has not been allowed into the mutation decision path
+- SQLite + its lease implementation is a **single-service-instance** production baseline. Do not enable side effects in a multi-replica deployment until the state/lease layer is replaced with an appropriate shared transactional store and distributed locking strategy.
+- Retry verification performs one bounded read. A still-running n8n retry returns `pending`; no unbounded background polling is performed.
+- If crash recovery cannot prove whether an execution retry already started, it deliberately stops for manual reconciliation.
+- Built-in operator authentication is a shared-secret baseline. Stronger deployments should put the service behind mTLS/OIDC/workload identity or another trusted gateway.
+- Diagnosis remains deterministic in v1. No LLM is allowed to directly mutate workflow JSON.
 
-## Next milestone — durable incident state and idempotent recovery
+## Release history
 
-Before adding an LLM agent, the mutation path needs durable operational semantics:
-
-1. persist incidents, proposals, dry-run bindings, approvals, and remediation attempts in SQLite/PostgreSQL
-2. assign idempotency keys so a repeated apply request cannot execute a second workflow update or second retry
-3. record explicit remediation states such as `validated`, `approved`, `updating`, `updated`, `retrying`, `verified`, and `needs_recovery`
-4. recover safely after process/network failure between update, verification, and retry
-5. store an append-only audit timeline without storing raw credentials or execution items
-6. produce a client/recruiter-readable incident report from that timeline
-7. add concurrency and duplicate-request benchmark cases
-8. only after this baseline is durable, add evidence-grounded model-assisted diagnosis and compare it against the deterministic classifier without weakening write safety
+See [`CHANGELOG.md`](CHANGELOG.md).
