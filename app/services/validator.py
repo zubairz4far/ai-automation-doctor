@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from app.models.schemas import PatchProposal
 
-
 FORBIDDEN_PATH_PARTS = (
     "/credentials",
     "/type",
