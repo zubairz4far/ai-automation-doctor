@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, ClassVar
 
 from app.models.schemas import ExecutionFailure
 
@@ -17,7 +17,7 @@ class N8NExecutionNormalizer:
     not retain node credentials, full workflow JSON, or raw input/output items.
     """
 
-    FAILED_STATUSES = {"error", "crashed"}
+    FAILED_STATUSES: ClassVar[frozenset[str]] = frozenset({"error", "crashed"})
 
     def normalize(self, payload: Mapping[str, Any]) -> ExecutionFailure:
         status = self._as_text(payload.get("status"))
