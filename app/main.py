@@ -6,10 +6,10 @@ from app.core.config import get_settings
 settings = get_settings()
 app = FastAPI(
     title=settings.app_name,
-    version="0.4.0",
+    version="1.0.0",
     description=(
-        "Diagnose n8n failures, validate constrained workflow patches, and execute "
-        "human-approved stale-safe remediation behind explicit mutation and retry gates."
+        "Durable n8n automation reliability service with privacy-minimized diagnosis, "
+        "constrained human-approved remediation, idempotency, and crash-safe recovery."
     ),
 )
 app.include_router(router)
