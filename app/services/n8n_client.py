@@ -36,14 +36,14 @@ class N8NClient:
         response.raise_for_status()
         return response.json()
 
-    def list_failed_executions(
+    def list_executions(
         self,
-        limit: int = 20,
+        limit: int = 100,
         cursor: str | None = None,
         workflow_id: str | None = None,
+        status: str | None = None,
     ) -> dict[str, Any]:
         params: dict[str, str | int] = {
-            "status": "error",
             "limit": max(1, min(limit, 100)),
             "includeData": "false",
         }
@@ -51,10 +51,44 @@ class N8NClient:
             params["cursor"] = cursor
         if workflow_id:
             params["workflowId"] = workflow_id
+        if status:
+            params["status"] = status
 
         response = self.client.get("/api/v1/executions", params=params)
         response.raise_for_status()
         return response.json()
+
+    def list_failed_executions(
+        self,
+        limit: int = 20,
+        cursor: str | None = None,
+        workflow_id: str | None = None,
+    ) -> dict[str, Any]:
+        return self.list_executions(
+            limit=limit,
+            cursor=cursor,
+            workflow_id=workflow_id,
+            status="error",
+        )
+
+    def find_retry_execution(
+        self,
+        original_execution_id: str,
+        workflow_id: str,
+        limit: int = 100,
+    ) -> dict[str, Any] | None:
+        """Find evidence of an already-created retry without starting another retry."""
+        payload = self.list_executions(limit=limit, workflow_id=workflow_id)
+        executions = payload.get("data", [])
+        if not isinstance(executions, list):
+            return None
+        for execution in executions:
+            if not isinstance(execution, dict):
+                continue
+            retry_of = execution.get("retryOf")
+            if retry_of is not None and str(retry_of) == original_execution_id:
+                return execution
+        return None
 
     def get_workflow(self, workflow_id: str) -> dict[str, Any]:
         response = self.client.get(f"/api/v1/workflows/{workflow_id}")
