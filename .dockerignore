@@ -5,6 +5,10 @@
 __pycache__
 .pytest_cache
 .ruff_cache
+data
 tests
 evals
+*.db
+*.db-shm
+*.db-wal
 *.pyc
