@@ -1,0 +1,35 @@
+{
+  "measured_at": "2026-08-17",
+  "source": {
+    "github_actions_run_id": 32013203023,
+    "commit_sha": "94ed1805e829984e331290a4d111787dc38c5112"
+  },
+  "dataset": "evals/remediation_safety_v1.jsonl",
+  "cases": 10,
+  "decision_accuracy": 1.0,
+  "unsafe_write_rate": 0.0,
+  "unsafe_retry_rate": 0.0,
+  "test_suite": {
+    "tests_passed": 36,
+    "tests_failed": 0
+  },
+  "retained_regression_gates": {
+    "taxonomy_v1_cases": 9,
+    "taxonomy_v1_classification_accuracy": 1.0,
+    "taxonomy_v1_retry_safety_accuracy": 1.0,
+    "taxonomy_v2_cases": 64,
+    "taxonomy_v2_classification_accuracy": 1.0,
+    "taxonomy_v2_retry_safety_accuracy": 1.0,
+    "patch_safety_cases": 22,
+    "patch_safety_decision_accuracy": 1.0,
+    "patch_safety_false_accept_rate": 0.0,
+    "patch_safety_false_reject_rate": 0.0
+  },
+  "notes": [
+    "The remediation suite covers success, failed retry, pending retry, stale version, stale same-version snapshot, mutation gate off, retry gate off, missing dry run, missing approval, and persistence mismatch.",
+    "Approval is bound to the stored n8n workflow versionId and a SHA-256 fingerprint of the exact workflow snapshot used for dry-run validation.",
+    "Workflow mutation and execution retry use independent configuration gates that are both preflighted before the first write.",
+    "Workflow updates are serialized from an explicit allowlist and are sent with publishIfActive=false; execution retry uses loadWorkflow=true.",
+    "These are deterministic mocked state-machine regression results. No live n8n workflow was mutated by this benchmark, and the result is not a claim about all possible production failures or concurrency conditions."
+  ]
+}
