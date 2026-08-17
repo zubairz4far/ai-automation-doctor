@@ -1,0 +1,64 @@
+{"id":"auth-101","error_message":"Authorization failed - please check your credentials","status_code":401,"node_type":"n8n-nodes-base.httpRequest","error_stack":null,"error_code":null,"expected_class":"authentication","retry_safe":false}
+{"id":"auth-102","error_message":"OAuth2 access token expired","status_code":null,"node_type":"n8n-nodes-base.googleSheets","error_stack":null,"error_code":null,"expected_class":"authentication","retry_safe":false}
+{"id":"auth-103","error_message":"Forbidden","status_code":403,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"authentication","retry_safe":false}
+{"id":"auth-104","error_message":"Invalid API key supplied","status_code":401,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"authentication","retry_safe":false}
+{"id":"auth-105","error_message":"Credential is missing for this node","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"authentication","retry_safe":false}
+{"id":"auth-106","error_message":"Request timed out while refreshing OAuth token","status_code":401,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"authentication","retry_safe":false}
+{"id":"auth-107","error_message":"Access token expired; reconnect account","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"authentication","retry_safe":false}
+{"id":"auth-108","error_message":"Authentication failed for upstream service","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"authentication","retry_safe":false}
+{"id":"rate-101","error_message":"Too many requests","status_code":429,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"rate_limit","retry_safe":true}
+{"id":"rate-102","error_message":"Quota exceeded for this minute","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"rate_limit","retry_safe":true}
+{"id":"rate-103","error_message":"rateLimitExceeded","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"rate_limit","retry_safe":true}
+{"id":"rate-104","error_message":"Upstream throttled the request; retry later","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"rate_limit","retry_safe":true}
+{"id":"rate-105","error_message":"Retry-After: 30","status_code":429,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"rate_limit","retry_safe":true}
+{"id":"rate-106","error_message":"Invalid token appeared in response body, but service returned 429","status_code":429,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"rate_limit","retry_safe":true}
+{"id":"rate-107","error_message":"API rate limit reached","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"rate_limit","retry_safe":true}
+{"id":"rate-108","error_message":"HTTP request rejected due to too many requests","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"rate_limit","retry_safe":true}
+{"id":"timeout-101","error_message":"Request timed out after 30000ms","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"timeout","retry_safe":true}
+{"id":"timeout-102","error_message":"timeout of 300000ms exceeded","status_code":null,"node_type":null,"error_stack":null,"error_code":"ECONNABORTED","expected_class":"timeout","retry_safe":true}
+{"id":"timeout-103","error_message":"ETIMEDOUT while connecting to upstream","status_code":null,"node_type":null,"error_stack":null,"error_code":"ETIMEDOUT","expected_class":"timeout","retry_safe":true}
+{"id":"timeout-104","error_message":"Gateway Timeout","status_code":504,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"timeout","retry_safe":true}
+{"id":"timeout-105","error_message":"Request Timeout","status_code":408,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"timeout","retry_safe":true}
+{"id":"timeout-106","error_message":"Operation timed out waiting for response","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"timeout","retry_safe":true}
+{"id":"timeout-107","error_message":"The connection was aborted after timeout","status_code":null,"node_type":null,"error_stack":null,"error_code":"ECONNABORTED","expected_class":"timeout","retry_safe":true}
+{"id":"timeout-108","error_message":"socket timeout reached","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"timeout","retry_safe":true}
+{"id":"network-101","error_message":"connect ECONNREFUSED 10.0.0.5:443","status_code":null,"node_type":null,"error_stack":null,"error_code":"ECONNREFUSED","expected_class":"network","retry_safe":true}
+{"id":"network-102","error_message":"getaddrinfo ENOTFOUND api.example.com","status_code":null,"node_type":null,"error_stack":null,"error_code":"ENOTFOUND","expected_class":"network","retry_safe":true}
+{"id":"network-103","error_message":"getaddrinfo EAI_AGAIN www.googleapis.com","status_code":null,"node_type":null,"error_stack":null,"error_code":"EAI_AGAIN","expected_class":"network","retry_safe":true}
+{"id":"network-104","error_message":"socket hang up","status_code":null,"node_type":null,"error_stack":null,"error_code":"ECONNRESET","expected_class":"network","retry_safe":true}
+{"id":"network-105","error_message":"DNS lookup failed for upstream host","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"network","retry_safe":true}
+{"id":"network-106","error_message":"Temporary failure in name resolution","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"network","retry_safe":true}
+{"id":"network-107","error_message":"Network error while reaching service","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"network","retry_safe":true}
+{"id":"network-108","error_message":"Connection refused by upstream host","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"network","retry_safe":true}
+{"id":"mapping-101","error_message":"Cannot read properties of undefined (reading 'email')","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"data_mapping","retry_safe":false}
+{"id":"mapping-102","error_message":"ExpressionError: no data found for item","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"data_mapping","retry_safe":false}
+{"id":"mapping-103","error_message":"Referenced node is unexecuted","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"data_mapping","retry_safe":false}
+{"id":"mapping-104","error_message":"PairedItem data is missing","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"data_mapping","retry_safe":false}
+{"id":"mapping-105","error_message":"Item linking could not resolve the source item","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"data_mapping","retry_safe":false}
+{"id":"mapping-106","error_message":"Invalid expression in field {{$json.customer.email}}","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"data_mapping","retry_safe":false}
+{"id":"mapping-107","error_message":"Missing input field customer.email in mapped data","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"data_mapping","retry_safe":false}
+{"id":"mapping-108","error_message":"invalid token in JSON payload","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"unknown","retry_safe":false}
+{"id":"webhook-101","error_message":"Not Found","status_code":404,"node_type":"n8n-nodes-base.webhook","error_stack":null,"error_code":null,"expected_class":"webhook","retry_safe":false}
+{"id":"webhook-102","error_message":"The requested webhook is not registered","status_code":null,"node_type":"n8n-nodes-base.webhook","error_stack":null,"error_code":null,"expected_class":"webhook","retry_safe":false}
+{"id":"webhook-103","error_message":"Webhook route not found","status_code":null,"node_type":"n8n-nodes-base.webhook","error_stack":null,"error_code":null,"expected_class":"webhook","retry_safe":false}
+{"id":"webhook-104","error_message":"Production webhook not found; workflow may be inactive","status_code":404,"node_type":"n8n-nodes-base.webhook","error_stack":null,"error_code":null,"expected_class":"webhook","retry_safe":false}
+{"id":"webhook-105","error_message":"Not Found","status_code":404,"node_type":"n8n-nodes-base.httpRequest","error_stack":null,"error_code":null,"expected_class":"unknown","retry_safe":false}
+{"id":"webhook-106","error_message":"404 from downstream REST endpoint","status_code":404,"node_type":"n8n-nodes-base.httpRequest","error_stack":null,"error_code":null,"expected_class":"unknown","retry_safe":false}
+{"id":"webhook-107","error_message":"Requested webhook does not exist","status_code":null,"node_type":"n8n-nodes-base.webhook","error_stack":null,"error_code":null,"expected_class":"webhook","retry_safe":false}
+{"id":"webhook-108","error_message":"Webhook is not registered for POST /lead","status_code":null,"node_type":"n8n-nodes-base.webhook","error_stack":null,"error_code":null,"expected_class":"webhook","retry_safe":false}
+{"id":"config-101","error_message":"Required parameter 'url' is missing","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"configuration","retry_safe":false}
+{"id":"config-102","error_message":"Invalid URL supplied to HTTP Request node","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"configuration","retry_safe":false}
+{"id":"config-103","error_message":"Workflow has issues and cannot be executed","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"configuration","retry_safe":false}
+{"id":"config-104","error_message":"Node has configuration issues","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"configuration","retry_safe":false}
+{"id":"config-105","error_message":"Missing required parameter: sheetId","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"configuration","retry_safe":false}
+{"id":"config-106","error_message":"Bad request - please check your parameters","status_code":400,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"configuration","retry_safe":false}
+{"id":"config-107","error_message":"Invalid configuration for resource/operation combination","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"configuration","retry_safe":false}
+{"id":"config-108","error_message":"400 Bad Request: malformed upstream business payload","status_code":400,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"unknown","retry_safe":false}
+{"id":"unknown-101","error_message":"Internal error encountered.","status_code":500,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"unknown","retry_safe":false}
+{"id":"unknown-102","error_message":"Service unavailable","status_code":503,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"unknown","retry_safe":false}
+{"id":"unknown-103","error_message":"Node failed for an unexpected reason","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"unknown","retry_safe":false}
+{"id":"unknown-104","error_message":"409 Conflict while updating record","status_code":409,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"unknown","retry_safe":false}
+{"id":"unknown-105","error_message":"410 Gone: deprecated upstream endpoint","status_code":410,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"unknown","retry_safe":false}
+{"id":"unknown-106","error_message":"Parse Error: Expected HTTP/, RTSP/ or ICE/","status_code":null,"node_type":null,"error_stack":null,"error_code":"HPE_INVALID_CONSTANT","expected_class":"unknown","retry_safe":false}
+{"id":"unknown-107","error_message":"Account is inactive","status_code":400,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"unknown","retry_safe":false}
+{"id":"unknown-108","error_message":"Permission field missing from business object","status_code":null,"node_type":null,"error_stack":null,"error_code":null,"expected_class":"unknown","retry_safe":false}
