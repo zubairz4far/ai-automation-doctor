@@ -25,6 +25,6 @@ jobs:
       - name: Tests
         run: pytest -q
       - name: Taxonomy benchmark
-        run: python scripts/evaluate_taxonomy.py
+        run: python -m scripts.evaluate_taxonomy
       - name: Build Docker image
         run: docker build -t ai-automation-doctor:ci .
