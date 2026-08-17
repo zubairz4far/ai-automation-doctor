@@ -1,7 +1,7 @@
 [project]
 name = "ai-automation-doctor"
-version = "0.1.0"
-description = "Diagnose failed n8n automations, propose safe workflow patches, and require human approval before mutation."
+version = "0.2.0"
+description = "Ingest and diagnose failed n8n automations, propose safe workflow patches, and require human approval before mutation."
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115",
