@@ -1,15 +1,12 @@
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+from app.models.schemas import ExecutionFailure
+from app.services.diagnoser import DiagnosisEngine
 
-from app.models.schemas import ExecutionFailure  # noqa: E402
-from app.services.diagnoser import DiagnosisEngine  # noqa: E402
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def main() -> None:
