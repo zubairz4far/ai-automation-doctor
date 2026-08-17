@@ -67,8 +67,8 @@ class WorkflowDryRunEngine:
             raise WorkflowDryRunError("A baseline dry run may target exactly one workflow node.")
 
         self._assert_protected_invariants(workflow, patched, target_indices)
-        before_fingerprint = self._structural_fingerprint(workflow)
-        after_fingerprint = self._structural_fingerprint(patched)
+        before_fingerprint = self.structural_fingerprint(workflow)
+        after_fingerprint = self.structural_fingerprint(patched)
         if before_fingerprint != after_fingerprint:
             raise WorkflowDryRunError("Protected workflow structure changed during dry run.")
 
@@ -82,15 +82,33 @@ class WorkflowDryRunEngine:
             workflow_id=proposal.workflow_id,
             target_nodes=sorted(target_names),
             changes=changes,
+            workflow_version_id=self.workflow_version_id(workflow),
+            workflow_snapshot_fingerprint=self.snapshot_fingerprint(workflow),
             structural_fingerprint_before=before_fingerprint,
             structural_fingerprint_after=after_fingerprint,
             validation_notes=[
                 "Patch was applied to a deep copy only; no n8n write occurred.",
                 "Connections, settings, node identity/type, position, webhook IDs, credentials, and parameters were preserved.",
                 "Only allowlisted n8n node-level retry fields changed.",
+                "Approval is bound to this exact workflow version and snapshot fingerprint.",
             ],
         )
         return response, patched
+
+    @staticmethod
+    def workflow_version_id(workflow: dict[str, Any]) -> str | None:
+        version_id = workflow.get("versionId")
+        return str(version_id) if version_id is not None else None
+
+    @staticmethod
+    def snapshot_fingerprint(workflow: dict[str, Any]) -> str:
+        encoded = json.dumps(
+            workflow,
+            sort_keys=True,
+            separators=(",", ":"),
+            default=str,
+        ).encode()
+        return hashlib.sha256(encoded).hexdigest()
 
     @staticmethod
     def _validate_workflow_shape(workflow: dict[str, Any], proposal_workflow_id: str) -> None:
@@ -198,7 +216,7 @@ class WorkflowDryRunEngine:
             for key in ("id", "name", "type", "typeVersion", "position", "webhookId", "credentials")
         }
 
-    def _structural_fingerprint(self, workflow: dict[str, Any]) -> str:
+    def structural_fingerprint(self, workflow: dict[str, Any]) -> str:
         protected = {
             "name": workflow.get("name"),
             "connections": workflow.get("connections", {}),
