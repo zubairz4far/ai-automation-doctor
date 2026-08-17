@@ -33,5 +33,10 @@ jobs:
             --output evals/results/taxonomy_v2.json \
             --min-classification-accuracy 1.0 \
             --min-retry-safety-accuracy 1.0
+      - name: Patch safety benchmark V1
+        run: |
+          python -m scripts.evaluate_patch_safety \
+            --min-decision-accuracy 1.0 \
+            --max-false-accept-rate 0.0
       - name: Build Docker image
         run: docker build -t ai-automation-doctor:ci .
