@@ -129,7 +129,7 @@ def run_case(case: dict[str, Any], workflow: dict[str, Any]) -> dict[str, Any]:
     try:
         result = ControlledRemediationService(incidents, n8n).apply_retry_verify(proposal_id)
         outcome = result.verification
-    except Exception as exc:  # benchmark intentionally classifies controlled failures
+    except (PermissionError, DryRunRequiredError, ApprovalRequiredError, RemediationError) as exc:
         outcome = classify_exception(exc)
 
     return {
