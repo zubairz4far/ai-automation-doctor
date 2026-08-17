@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     n8n_timeout_seconds: float = 20.0
     allow_workflow_mutation: bool = False
     allow_execution_retry: bool = False
+    operator_token: str | None = None
     max_patch_operations: int = 8
     state_db_path: str = "./data/ai-automation-doctor.db"
     remediation_lease_seconds: int = 30
