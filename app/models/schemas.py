@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from enum import StrEnum
 from typing import Any, Literal
 
@@ -80,6 +81,9 @@ class ApprovalRecord(BaseModel):
     approved: bool
     approved_by: str
     note: str | None = None
+    workflow_version_id: str | None = None
+    workflow_snapshot_fingerprint: str
+    approved_at: datetime
 
 
 class WorkflowDryRunRequest(BaseModel):
@@ -100,6 +104,23 @@ class WorkflowDryRunResponse(BaseModel):
     valid: bool = True
     target_nodes: list[str]
     changes: list[WorkflowPatchChange]
+    workflow_version_id: str | None = None
+    workflow_snapshot_fingerprint: str
     structural_fingerprint_before: str
     structural_fingerprint_after: str
     validation_notes: list[str]
+
+
+class RemediationResponse(BaseModel):
+    proposal_id: str
+    workflow_id: str
+    original_execution_id: str
+    workflow_version_before: str | None = None
+    workflow_version_after: str | None = None
+    update_applied: bool
+    publish_if_active: bool = False
+    retry_started: bool
+    retry_execution_id: str | None = None
+    retry_status: str | None = None
+    verification: Literal["success", "failure", "pending"]
+    evidence: list[str] = Field(default_factory=list)
