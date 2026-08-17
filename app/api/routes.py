@@ -3,6 +3,7 @@ from typing import Any
 
 import httpx
 from fastapi import APIRouter, HTTPException, status
+from fastapi.responses import PlainTextResponse
 
 from app.core.config import get_settings
 from app.models.schemas import (
@@ -10,7 +11,9 @@ from app.models.schemas import (
     ApprovalRecord,
     ApprovalRequest,
     ExecutionFailure,
+    IncidentTimelineResponse,
     RemediationResponse,
+    SystemStats,
     WorkflowDryRunRequest,
     WorkflowDryRunResponse,
 )
@@ -58,9 +61,48 @@ def health() -> dict:
     return {
         "status": "ok",
         "service": settings.app_name,
+        "durable_state": True,
         "workflow_mutation_enabled": settings.allow_workflow_mutation,
         "execution_retry_enabled": settings.allow_execution_retry,
     }
+
+
+@router.get("/ready")
+def ready() -> dict:
+    try:
+        storage_ready = get_incident_service().store.ping()
+    except OSError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Durable state store is unavailable.",
+        ) from exc
+    if not storage_ready:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Durable state store is not ready.",
+        )
+    return {"status": "ready", "storage": "sqlite"}
+
+
+@router.get("/metrics", response_class=PlainTextResponse)
+def metrics() -> str:
+    settings = get_settings()
+    stats = get_incident_service().stats()
+    values = {
+        "doctor_incidents_total": stats.incidents,
+        "doctor_proposals_total": stats.proposals,
+        "doctor_approvals_total": stats.approvals,
+        "doctor_remediations_total": stats.remediations,
+        "doctor_remediations_completed_total": stats.completed_remediations,
+        "doctor_workflow_mutation_enabled": int(settings.allow_workflow_mutation),
+        "doctor_execution_retry_enabled": int(settings.allow_execution_retry),
+    }
+    return "\n".join(f"{key} {value}" for key, value in values.items()) + "\n"
+
+
+@router.get("/v1/stats", response_model=SystemStats)
+def system_stats() -> SystemStats:
+    return get_incident_service().stats()
 
 
 @router.post("/v1/incidents/analyze", response_model=AnalyzeResponse)
@@ -104,6 +146,20 @@ def analyze_n8n_execution(execution_id: str) -> AnalyzeResponse:
         ) from exc
 
     return get_incident_service().analyze(failure)
+
+
+@router.get(
+    "/v1/patches/{proposal_id}/timeline",
+    response_model=IncidentTimelineResponse,
+)
+def patch_timeline(proposal_id: str) -> IncidentTimelineResponse:
+    try:
+        return get_incident_service().timeline(proposal_id)
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Patch proposal not found.",
+        ) from exc
 
 
 @router.post(
@@ -204,5 +260,5 @@ def apply_retry_patch(proposal_id: str) -> RemediationResponse:
     except httpx.HTTPError as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="n8n remediation request failed; no further retry was attempted.",
+            detail="n8n remediation request failed; durable state preserved for safe recovery.",
         ) from exc
