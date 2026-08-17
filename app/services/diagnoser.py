@@ -8,98 +8,235 @@ class DiagnosisEngine:
 
     def diagnose(self, failure: ExecutionFailure) -> Diagnosis:
         text = " ".join(
-            part for part in [failure.error_message, failure.error_stack or ""] if part
+            part
+            for part in [
+                failure.error_message,
+                failure.error_stack or "",
+                failure.error_code or "",
+            ]
+            if part
         ).lower()
         code = failure.status_code
+        node_hint = " ".join(
+            part for part in [failure.failed_node or "", failure.node_type or ""] if part
+        ).lower()
 
-        if code in {401, 403} or any(
-            token in text
-            for token in ("unauthorized", "forbidden", "invalid api key", "invalid token", "oauth")
+        # Explicit protocol status takes precedence over ambiguous message text.
+        if code in {401, 403}:
+            return self._diagnosis(
+                failure,
+                FailureClass.AUTH,
+                0.98,
+                "The failing node could not authenticate with its upstream service.",
+                "HTTP 401/403 detected.",
+                "Verify the referenced credential and its scopes; do not rotate or replace secrets automatically.",
+                False,
+            )
+
+        if code == 429:
+            return self._diagnosis(
+                failure,
+                FailureClass.RATE_LIMIT,
+                0.99,
+                "The upstream service throttled the workflow request.",
+                "HTTP 429 detected.",
+                "Add bounded retry/backoff or reduce request concurrency.",
+                True,
+            )
+
+        if code in {408, 504}:
+            return self._diagnosis(
+                failure,
+                FailureClass.TIMEOUT,
+                0.97,
+                "The request exceeded an upstream or gateway time limit.",
+                f"HTTP {code} timeout status detected.",
+                "Use bounded timeout/retry settings and verify the upstream latency before increasing limits.",
+                True,
+            )
+
+        if self._contains(
+            text,
+            (
+                "authorization failed",
+                "authentication failed",
+                "unauthorized",
+                "forbidden",
+                "invalid api key",
+                "api key supplied",
+                "oauth token",
+                "oauth2",
+                "credential is missing",
+                "credentials are invalid",
+                "access token expired",
+                "token expired",
+            ),
         ):
-            return Diagnosis(
-                failure_class=FailureClass.AUTH,
-                confidence=0.96,
-                root_cause="The failing node could not authenticate with its upstream service.",
-                evidence=self._evidence(failure, "Authentication-related response or message detected."),
-                recommended_action=(
-                    "Verify the referenced credential and its scopes; do not rotate or replace secrets automatically."
-                ),
-                retry_safe=False,
+            return self._diagnosis(
+                failure,
+                FailureClass.AUTH,
+                0.95,
+                "The failing node likely has an authentication or credential problem.",
+                "Credential/authentication language detected.",
+                "Verify the referenced credential and scopes; never modify secrets automatically.",
+                False,
             )
 
-        if code == 429 or any(
-            token in text for token in ("rate limit", "too many requests", "quota exceeded")
+        if self._contains(
+            text,
+            (
+                "rate limit",
+                "too many requests",
+                "quota exceeded",
+                "ratelimitexceeded",
+                "throttled",
+                "retry-after",
+            ),
         ):
-            return Diagnosis(
-                failure_class=FailureClass.RATE_LIMIT,
-                confidence=0.97,
-                root_cause="The upstream service throttled the workflow request.",
-                evidence=self._evidence(failure, "HTTP 429 or rate-limit language detected."),
-                recommended_action="Add bounded retry/backoff or reduce request concurrency.",
-                retry_safe=True,
+            return self._diagnosis(
+                failure,
+                FailureClass.RATE_LIMIT,
+                0.96,
+                "The upstream service appears to be throttling requests.",
+                "Rate-limit or throttling language detected.",
+                "Add bounded exponential backoff and reduce concurrency where appropriate.",
+                True,
             )
 
-        if any(token in text for token in ("timeout", "timed out", "etimedout")):
-            return Diagnosis(
-                failure_class=FailureClass.TIMEOUT,
-                confidence=0.92,
-                root_cause="The node exceeded its allowed response or execution time.",
-                evidence=self._evidence(failure, "Timeout signature detected."),
-                recommended_action="Increase the node timeout only within a bounded limit and add retry/backoff.",
-                retry_safe=True,
+        if self._contains(text, ("timeout", "timed out", "etimedout", "econnaborted")):
+            return self._diagnosis(
+                failure,
+                FailureClass.TIMEOUT,
+                0.93,
+                "The node exceeded its allowed response or execution time.",
+                "Timeout signature detected.",
+                "Increase timeout only within a bounded limit and use bounded retry/backoff.",
+                True,
             )
 
-        if any(
-            token in text
-            for token in ("econnrefused", "enotfound", "dns", "socket hang up", "network error")
+        if self._contains(
+            text,
+            (
+                "econnrefused",
+                "enotfound",
+                "eai_again",
+                "econnreset",
+                "socket hang up",
+                "dns",
+                "getaddrinfo",
+                "network error",
+                "connection refused",
+                "temporary failure in name resolution",
+            ),
         ):
-            return Diagnosis(
-                failure_class=FailureClass.NETWORK,
-                confidence=0.91,
-                root_cause="The workflow could not reach the upstream host reliably.",
-                evidence=self._evidence(failure, "Network transport signature detected."),
-                recommended_action="Verify host reachability and retry with bounded exponential backoff.",
-                retry_safe=True,
+            return self._diagnosis(
+                failure,
+                FailureClass.NETWORK,
+                0.92,
+                "The workflow could not reach the upstream host reliably.",
+                "Network transport or name-resolution signature detected.",
+                "Verify host reachability and retry only with bounded exponential backoff.",
+                True,
             )
 
-        if any(
-            token in text
-            for token in (
+        if self._contains(
+            text,
+            (
                 "cannot read properties of undefined",
-                "undefined",
-                "expression",
+                "expressionerror",
+                "expression error",
                 "paireditem",
+                "paired item",
                 "item linking",
-                "no data found",
-            )
+                "referenced node is unexecuted",
+                "no data found for item",
+                "invalid expression",
+                "missing input field",
+            ),
         ):
-            return Diagnosis(
-                failure_class=FailureClass.DATA_MAPPING,
-                confidence=0.86,
-                root_cause="The node likely expects data that is missing or mapped from the wrong item/path.",
-                evidence=self._evidence(failure, "Data/expression mapping signature detected."),
-                recommended_action="Inspect the failing expression against the captured input before changing it.",
-                retry_safe=False,
+            return self._diagnosis(
+                failure,
+                FailureClass.DATA_MAPPING,
+                0.89,
+                "The node likely expects data that is missing or mapped from the wrong item/path.",
+                "Data/expression mapping signature detected.",
+                "Inspect the failing expression against captured input before changing it.",
+                False,
             )
 
-        if code == 404 and failure.node_type and "webhook" in failure.node_type.lower():
-            return Diagnosis(
-                failure_class=FailureClass.WEBHOOK,
-                confidence=0.90,
-                root_cause="The webhook route or target endpoint was not found.",
-                evidence=self._evidence(failure, "Webhook node returned HTTP 404."),
-                recommended_action="Verify the production webhook URL and workflow activation state.",
-                retry_safe=False,
-            )
-
-        return Diagnosis(
-            failure_class=FailureClass.UNKNOWN,
-            confidence=0.35,
-            root_cause="The failure does not match the deterministic baseline taxonomy.",
-            evidence=self._evidence(failure, "No high-confidence rule matched."),
-            recommended_action="Escalate to deeper analysis; do not mutate the workflow automatically.",
-            retry_safe=False,
+        webhook_terms = (
+            "requested webhook",
+            "webhook route",
+            "production webhook",
+            "webhook is not registered",
         )
+        if "webhook" in node_hint and (
+            code == 404 or self._contains(text, webhook_terms)
+        ):
+            return self._diagnosis(
+                failure,
+                FailureClass.WEBHOOK,
+                0.92,
+                "The webhook route or registration is missing for the failing workflow.",
+                "Webhook node plus route/404 evidence detected.",
+                "Verify the production webhook URL, HTTP method, and workflow activation state.",
+                False,
+            )
+
+        if self._contains(
+            text,
+            (
+                "required parameter",
+                "invalid url",
+                "workflow has issues",
+                "configuration issues",
+                "missing required parameter",
+                "bad request - please check your parameters",
+                "invalid configuration",
+            ),
+        ):
+            return self._diagnosis(
+                failure,
+                FailureClass.CONFIGURATION,
+                0.87,
+                "The failing node or workflow appears to be misconfigured.",
+                "Explicit configuration/required-parameter language detected.",
+                "Inspect the node configuration and validate required parameters before applying a change.",
+                False,
+            )
+
+        return self._diagnosis(
+            failure,
+            FailureClass.UNKNOWN,
+            0.35,
+            "The failure does not match the deterministic baseline taxonomy.",
+            "No high-confidence rule matched.",
+            "Escalate to deeper analysis; do not mutate or automatically retry the workflow.",
+            False,
+        )
+
+    def _diagnosis(
+        self,
+        failure: ExecutionFailure,
+        failure_class: FailureClass,
+        confidence: float,
+        root_cause: str,
+        reason: str,
+        recommended_action: str,
+        retry_safe: bool,
+    ) -> Diagnosis:
+        return Diagnosis(
+            failure_class=failure_class,
+            confidence=confidence,
+            root_cause=root_cause,
+            evidence=self._evidence(failure, reason),
+            recommended_action=recommended_action,
+            retry_safe=retry_safe,
+        )
+
+    @staticmethod
+    def _contains(text: str, tokens: tuple[str, ...]) -> bool:
+        return any(token in text for token in tokens)
 
     @staticmethod
     def _evidence(failure: ExecutionFailure, reason: str) -> list[str]:
@@ -108,4 +245,6 @@ class DiagnosisEngine:
             evidence.append(f"failed_node={failure.failed_node}")
         if failure.status_code:
             evidence.append(f"status_code={failure.status_code}")
+        if failure.error_code and failure.error_code != str(failure.status_code):
+            evidence.append(f"error_code={failure.error_code[:80]}")
         return evidence
