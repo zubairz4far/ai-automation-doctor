@@ -11,7 +11,7 @@ from app.models.schemas import (
     WorkflowDryRunResponse,
     WorkflowPatchChange,
 )
-from app.services.validator import ALLOWED_OPTION_PATHS, PatchValidator
+from app.services.validator import ALLOWED_NODE_FIELDS, PatchValidator
 
 
 class WorkflowDryRunError(ValueError):
@@ -44,15 +44,15 @@ class WorkflowDryRunEngine:
         target_indices: set[int] = set()
 
         for operation in proposal.operations:
-            node_name, option_name = self._parse_path(operation.path)
+            node_name, field_name = self._parse_path(operation.path)
             node_index = self._resolve_unique_node_index(nodes, node_name)
             target_names.add(node_name)
             target_indices.add(node_index)
 
             target = nodes[node_index]
-            before = self._read_option(target, option_name)
-            self._apply_option(target, option_name, operation)
-            after = self._read_option(target, option_name)
+            before = self._read_field(target, field_name)
+            self._apply_field(target, field_name, operation)
+            after = self._read_field(target, field_name)
             changes.append(
                 WorkflowPatchChange(
                     node_name=node_name,
@@ -72,7 +72,6 @@ class WorkflowDryRunEngine:
         if before_fingerprint != after_fingerprint:
             raise WorkflowDryRunError("Protected workflow structure changed during dry run.")
 
-        # Extra defensive check: node count/order is stable after application.
         if [self._node_identity(node) for node in original_nodes] != [
             self._node_identity(node) for node in nodes
         ]:
@@ -87,8 +86,8 @@ class WorkflowDryRunEngine:
             structural_fingerprint_after=after_fingerprint,
             validation_notes=[
                 "Patch was applied to a deep copy only; no n8n write occurred.",
-                "Connections, settings, node identity/type, position, webhook IDs, and credentials were preserved.",
-                "Only allowlisted retry option leaves changed.",
+                "Connections, settings, node identity/type, position, webhook IDs, credentials, and parameters were preserved.",
+                "Only allowlisted n8n node-level retry fields changed.",
             ],
         )
         return response, patched
@@ -126,18 +125,15 @@ class WorkflowDryRunEngine:
     @staticmethod
     def _parse_path(path: str) -> tuple[str, str]:
         parts = path.split("/")
-        if len(parts) != 6 or parts[:2] != ["", "nodes"]:
+        if len(parts) != 4 or parts[:2] != ["", "nodes"]:
             raise WorkflowDryRunError(f"Unsupported logical patch path: {path}")
-        if parts[3:5] != ["parameters", "options"]:
-            raise WorkflowDryRunError(f"Unsupported logical patch path: {path}")
-        option_name = parts[5]
-        if option_name not in ALLOWED_OPTION_PATHS:
-            raise WorkflowDryRunError(f"Option is not allowlisted: {option_name}")
-        return WorkflowDryRunEngine._unescape_segment(parts[2]), option_name
+        field_name = parts[3]
+        if field_name not in ALLOWED_NODE_FIELDS:
+            raise WorkflowDryRunError(f"Node field is not allowlisted: {field_name}")
+        return WorkflowDryRunEngine._unescape_segment(parts[2]), field_name
 
     @staticmethod
     def _unescape_segment(value: str) -> str:
-        # Reject malformed JSON Pointer escape sequences rather than guessing.
         index = 0
         output: list[str] = []
         while index < len(value):
@@ -155,27 +151,14 @@ class WorkflowDryRunEngine:
         return node_name
 
     @staticmethod
-    def _read_option(node: dict[str, Any], option_name: str) -> Any:
-        parameters = node.get("parameters")
-        if not isinstance(parameters, dict):
-            return _MISSING
-        options = parameters.get("options")
-        if not isinstance(options, dict):
-            return _MISSING
-        return options.get(option_name, _MISSING)
+    def _read_field(node: dict[str, Any], field_name: str) -> Any:
+        return node.get(field_name, _MISSING)
 
     @staticmethod
-    def _apply_option(node: dict[str, Any], option_name: str, operation: PatchOperation) -> None:
-        parameters = node.setdefault("parameters", {})
-        if not isinstance(parameters, dict):
-            raise WorkflowDryRunError("Target node parameters are not an object.")
-        options = parameters.setdefault("options", {})
-        if not isinstance(options, dict):
-            raise WorkflowDryRunError("Target node parameters.options is not an object.")
-
-        if operation.op == "replace" and option_name not in options:
-            raise WorkflowDryRunError(f"replace requires an existing option: {option_name}")
-        options[option_name] = deepcopy(operation.value)
+    def _apply_field(node: dict[str, Any], field_name: str, operation: PatchOperation) -> None:
+        if operation.op == "replace" and field_name not in node:
+            raise WorkflowDryRunError(f"replace requires an existing node field: {field_name}")
+        node[field_name] = deepcopy(operation.value)
 
     @staticmethod
     def _assert_protected_invariants(
@@ -199,37 +182,14 @@ class WorkflowDryRunEngine:
                     raise WorkflowDryRunError("A non-target workflow node changed.")
                 continue
 
-            before_outer = {key: value for key, value in before_node.items() if key != "parameters"}
-            after_outer = {key: value for key, value in after_node.items() if key != "parameters"}
-            if before_outer != after_outer:
-                raise WorkflowDryRunError("Protected target-node metadata changed.")
-
-            before_parameters = before_node.get("parameters", {})
-            after_parameters = after_node.get("parameters", {})
-            if not isinstance(before_parameters, dict) or not isinstance(after_parameters, dict):
-                raise WorkflowDryRunError("Target node parameters are malformed.")
-
-            before_non_options = {
-                key: value for key, value in before_parameters.items() if key != "options"
-            }
-            after_non_options = {
-                key: value for key, value in after_parameters.items() if key != "options"
-            }
-            if before_non_options != after_non_options:
-                raise WorkflowDryRunError("Non-option node parameters changed.")
-
-            before_options = before_parameters.get("options", {})
-            after_options = after_parameters.get("options", {})
-            if not isinstance(before_options, dict) or not isinstance(after_options, dict):
-                raise WorkflowDryRunError("Target node options are malformed.")
             before_protected = {
-                key: value for key, value in before_options.items() if key not in ALLOWED_OPTION_PATHS
+                key: value for key, value in before_node.items() if key not in ALLOWED_NODE_FIELDS
             }
             after_protected = {
-                key: value for key, value in after_options.items() if key not in ALLOWED_OPTION_PATHS
+                key: value for key, value in after_node.items() if key not in ALLOWED_NODE_FIELDS
             }
             if before_protected != after_protected:
-                raise WorkflowDryRunError("A non-allowlisted node option changed.")
+                raise WorkflowDryRunError("A protected target-node field changed.")
 
     @staticmethod
     def _node_identity(node: dict[str, Any]) -> dict[str, Any]:
