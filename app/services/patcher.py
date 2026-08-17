@@ -12,14 +12,20 @@ from app.models.schemas import (
 )
 
 
+def escape_path_segment(value: str) -> str:
+    """Escape a logical path segment using JSON Pointer escaping rules."""
+    return value.replace("~", "~0").replace("/", "~1")
+
+
 class PatchPlanner:
-    """Creates conservative JSON-patch-like proposals. It never inserts credentials or code."""
+    """Creates conservative logical patch proposals. It never inserts credentials or code."""
 
     def propose(self, failure: ExecutionFailure, diagnosis: Diagnosis) -> PatchProposal | None:
         node = failure.failed_node
         if not node:
             return None
 
+        node_segment = escape_path_segment(node)
         operations: list[PatchOperation] = []
         risk = RiskLevel.MEDIUM
 
@@ -27,19 +33,19 @@ class PatchPlanner:
             operations = [
                 PatchOperation(
                     op="add",
-                    path=f"/nodes/{node}/parameters/options/retryOnFail",
+                    path=f"/nodes/{node_segment}/parameters/options/retryOnFail",
                     value=True,
                     reason="Enable bounded retry behavior for upstream throttling.",
                 ),
                 PatchOperation(
                     op="add",
-                    path=f"/nodes/{node}/parameters/options/maxTries",
+                    path=f"/nodes/{node_segment}/parameters/options/maxTries",
                     value=3,
                     reason="Cap retries to avoid runaway execution loops.",
                 ),
                 PatchOperation(
                     op="add",
-                    path=f"/nodes/{node}/parameters/options/waitBetweenTries",
+                    path=f"/nodes/{node_segment}/parameters/options/waitBetweenTries",
                     value=2000,
                     reason="Add delay between attempts to reduce immediate re-throttling.",
                 ),
@@ -49,13 +55,13 @@ class PatchPlanner:
             operations = [
                 PatchOperation(
                     op="add",
-                    path=f"/nodes/{node}/parameters/options/retryOnFail",
+                    path=f"/nodes/{node_segment}/parameters/options/retryOnFail",
                     value=True,
                     reason="Transient transport failures are retry candidates.",
                 ),
                 PatchOperation(
                     op="add",
-                    path=f"/nodes/{node}/parameters/options/maxTries",
+                    path=f"/nodes/{node_segment}/parameters/options/maxTries",
                     value=2,
                     reason="Keep retries bounded.",
                 ),
