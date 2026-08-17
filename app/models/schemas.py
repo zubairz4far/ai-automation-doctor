@@ -123,4 +123,26 @@ class RemediationResponse(BaseModel):
     retry_execution_id: str | None = None
     retry_status: str | None = None
     verification: Literal["success", "failure", "pending"]
+    idempotent_replay: bool = False
+    resumed_from_stage: str | None = None
     evidence: list[str] = Field(default_factory=list)
+
+
+class TimelineEvent(BaseModel):
+    event_type: str
+    created_at: datetime
+    details: dict[str, Any] = Field(default_factory=dict)
+
+
+class IncidentTimelineResponse(BaseModel):
+    proposal_id: str
+    incident_id: str | None = None
+    events: list[TimelineEvent]
+
+
+class SystemStats(BaseModel):
+    incidents: int
+    proposals: int
+    approvals: int
+    remediations: int
+    completed_remediations: int
