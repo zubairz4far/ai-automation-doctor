@@ -1,8 +1,12 @@
+import json
+from pathlib import Path
+
 from fastapi.testclient import TestClient
 
 from app.main import app
 
 client = TestClient(app)
+FIXTURE = Path(__file__).parent / "fixtures/http_retry_workflow.json"
 
 
 def test_health_mutation_is_disabled_by_default():
@@ -71,3 +75,32 @@ def test_n8n_ingestion_rejects_successful_execution():
     )
 
     assert response.status_code == 422
+
+
+def test_patch_dry_run_returns_diff_without_mutating_workflow():
+    analysis = client.post(
+        "/v1/incidents/analyze",
+        json={
+            "execution_id": "dry-run-execution",
+            "workflow_id": "workflow-7",
+            "failed_node": "CRM / HTTP Request",
+            "node_type": "n8n-nodes-base.httpRequest",
+            "error_message": "429 Too Many Requests",
+            "status_code": 429,
+        },
+    )
+    proposal_id = analysis.json()["patch"]["proposal_id"]
+    workflow = json.loads(FIXTURE.read_text())
+
+    response = client.post(
+        f"/v1/patches/{proposal_id}/dry-run",
+        json={"workflow": workflow},
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["valid"] is True
+    assert body["target_nodes"] == ["CRM / HTTP Request"]
+    assert len(body["changes"]) == 3
+    assert body["structural_fingerprint_before"] == body["structural_fingerprint_after"]
+    assert "workflow" not in body
