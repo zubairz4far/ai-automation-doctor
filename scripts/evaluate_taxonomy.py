@@ -1,14 +1,19 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
-from app.models.schemas import ExecutionFailure
-from app.services.diagnoser import DiagnosisEngine
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from app.models.schemas import ExecutionFailure  # noqa: E402
+from app.services.diagnoser import DiagnosisEngine  # noqa: E402
 
 
 def main() -> None:
-    dataset = Path("evals/failure_taxonomy_v1.jsonl")
+    dataset = ROOT / "evals/failure_taxonomy_v1.jsonl"
     rows = [json.loads(line) for line in dataset.read_text().splitlines() if line.strip()]
     engine = DiagnosisEngine()
     correct_class = 0
@@ -47,9 +52,12 @@ def main() -> None:
         "retry_safety_accuracy": correct_retry / len(rows),
         "details": details,
     }
-    out = Path("evals/results/taxonomy_v1.json")
+    out = ROOT / "evals/results/taxonomy_v1.json"
     out.write_text(json.dumps(summary, indent=2) + "\n")
     print(json.dumps({k: v for k, v in summary.items() if k != "details"}, indent=2))
+
+    if correct_class != len(rows) or correct_retry != len(rows):
+        raise SystemExit("Taxonomy benchmark regression detected.")
 
 
 if __name__ == "__main__":
