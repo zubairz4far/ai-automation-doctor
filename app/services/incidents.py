@@ -60,7 +60,12 @@ class IncidentService:
             self.proposals[patch.proposal_id] = patch
             self.proposal_execution_ids[patch.proposal_id] = failure.execution_id
 
-        self.store.save_incident(incident_id, failure, diagnosis, patch)
+        # Raw item data and workflow snapshots can contain credentials or customer
+        # payloads. They may be used transiently by callers, but never enter durable state.
+        durable_failure = failure.model_copy(
+            update={"input_snapshot": None, "workflow_snapshot": None}
+        )
+        self.store.save_incident(incident_id, durable_failure, diagnosis, patch)
         if patch:
             self.store.append_event(
                 patch.proposal_id,
