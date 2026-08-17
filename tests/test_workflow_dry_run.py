@@ -32,7 +32,7 @@ def make_rate_limit_proposal() -> PatchProposal:
     return proposal
 
 
-def test_dry_run_changes_only_allowlisted_retry_options():
+def test_dry_run_changes_only_allowlisted_node_retry_fields():
     workflow = load_workflow()
     original = deepcopy(workflow)
     proposal = make_rate_limit_proposal()
@@ -49,9 +49,10 @@ def test_dry_run_changes_only_allowlisted_retry_options():
     original_target = next(
         node for node in original["nodes"] if node["name"] == "CRM / HTTP Request"
     )
-    assert target["parameters"]["options"]["retryOnFail"] is True
-    assert target["parameters"]["options"]["maxTries"] == 3
-    assert target["parameters"]["options"]["waitBetweenTries"] == 2000
+    assert target["retryOnFail"] is True
+    assert target["maxTries"] == 3
+    assert target["waitBetweenTries"] == 2000
+    assert target["parameters"] == original_target["parameters"]
     assert target["credentials"] == original_target["credentials"]
     assert target["id"] == original_target["id"]
     assert target["type"] == original_target["type"]
@@ -64,6 +65,11 @@ def test_patch_planner_escapes_slash_in_node_name():
     proposal = make_rate_limit_proposal()
 
     assert all("CRM ~1 HTTP Request" in operation.path for operation in proposal.operations)
+    assert {operation.path.rsplit("/", 1)[-1] for operation in proposal.operations} == {
+        "retryOnFail",
+        "maxTries",
+        "waitBetweenTries",
+    }
 
 
 def test_dry_run_rejects_workflow_id_mismatch():
@@ -104,7 +110,7 @@ def test_validator_rejects_excessive_retry_count():
     proposal.operations = [
         PatchOperation(
             op="add",
-            path="/nodes/CRM ~1 HTTP Request/parameters/options/maxTries",
+            path="/nodes/CRM ~1 HTTP Request/maxTries",
             value=99,
             reason="unsafe test",
         )
@@ -114,16 +120,16 @@ def test_validator_rejects_excessive_retry_count():
         PatchValidator().validate(proposal)
 
 
-def test_replace_requires_existing_option():
+def test_replace_requires_existing_node_field():
     proposal = make_rate_limit_proposal()
     proposal.operations = [
         PatchOperation(
             op="replace",
-            path="/nodes/CRM ~1 HTTP Request/parameters/options/maxTries",
+            path="/nodes/CRM ~1 HTTP Request/maxTries",
             value=2,
             reason="replace test",
         )
     ]
 
-    with pytest.raises(WorkflowDryRunError, match="requires an existing option"):
+    with pytest.raises(WorkflowDryRunError, match="existing node field"):
         WorkflowDryRunEngine().dry_run(load_workflow(), proposal)
