@@ -6,7 +6,7 @@ from app.core.config import get_settings
 settings = get_settings()
 app = FastAPI(
     title=settings.app_name,
-    version="0.1.0",
-    description="Diagnose n8n failures and propose human-approved safe workflow patches.",
+    version="0.2.0",
+    description="Ingest n8n execution failures, diagnose root causes, and propose human-approved safe patches.",
 )
 app.include_router(router)
