@@ -215,7 +215,7 @@ curl http://localhost:8000/v1/patches/<proposal-id>/timeline
 
 ## Measured evaluation
 
-The current v1 candidate passed **46 automated tests** in GitHub Actions while retaining all earlier safety benchmarks.
+The v1 release baseline passed **46 automated tests** in GitHub Actions while retaining all earlier safety benchmarks.
 
 | Suite | Cases | Result |
 |---|---:|---:|
@@ -225,6 +225,8 @@ The current v1 candidate passed **46 automated tests** in GitHub Actions while r
 | Remediation Safety V1 | 10 | **100% state-machine decisions, 0% unsafe writes, 0% unsafe retries** |
 
 The v1-specific regression set additionally covers durable restart recovery, SQLite lease concurrency, idempotent completed replay, workflow-write crash recovery, retry crash recovery using `retryOf`, fail-closed ambiguous retry recovery, durable snapshot privacy, operator authentication, and metadata-only retry lookup.
+
+Machine-readable v1 evidence is committed at [`evals/results/v1_release_summary.json`](evals/results/v1_release_summary.json).
 
 These are bounded deterministic regression results. The datasets are synthetic/hand-labeled and remediation is exercised with mocks. They do **not** claim universal correctness for every n8n node, third-party API, distributed concurrency condition, or infrastructure failure, and this repository does not claim that its benchmark modified a live production n8n workflow.
 
