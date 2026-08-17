@@ -5,10 +5,18 @@ import httpx
 from fastapi import APIRouter, HTTPException, status
 
 from app.core.config import get_settings
-from app.models.schemas import AnalyzeResponse, ApprovalRecord, ApprovalRequest, ExecutionFailure
+from app.models.schemas import (
+    AnalyzeResponse,
+    ApprovalRecord,
+    ApprovalRequest,
+    ExecutionFailure,
+    WorkflowDryRunRequest,
+    WorkflowDryRunResponse,
+)
 from app.services.incidents import IncidentService
 from app.services.n8n_client import N8NClient
 from app.services.n8n_normalizer import N8NExecutionNormalizationError, N8NExecutionNormalizer
+from app.services.workflow_dry_run import WorkflowDryRunError
 
 router = APIRouter()
 
@@ -79,6 +87,25 @@ def analyze_n8n_execution(execution_id: str) -> AnalyzeResponse:
         ) from exc
 
     return get_incident_service().analyze(failure)
+
+
+@router.post(
+    "/v1/patches/{proposal_id}/dry-run",
+    response_model=WorkflowDryRunResponse,
+)
+def dry_run_patch(proposal_id: str, request: WorkflowDryRunRequest) -> WorkflowDryRunResponse:
+    try:
+        return get_incident_service().dry_run(proposal_id, request.workflow)
+    except KeyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Patch proposal not found.",
+        ) from exc
+    except WorkflowDryRunError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=str(exc),
+        ) from exc
 
 
 @router.post("/v1/patches/{proposal_id}/approve", response_model=ApprovalRecord)
