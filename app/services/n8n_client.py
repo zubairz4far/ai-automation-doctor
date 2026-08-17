@@ -10,8 +10,12 @@ from app.core.config import Settings
 class N8NClient:
     """Thin public-API client. Mutation methods are gated by Settings."""
 
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings, client: httpx.Client | None = None):
         self.settings = settings
+        if client is not None:
+            self.client = client
+            return
+
         headers = {"Accept": "application/json"}
         if settings.n8n_api_key:
             headers["X-N8N-API-KEY"] = settings.n8n_api_key
@@ -22,7 +26,33 @@ class N8NClient:
         )
 
     def get_execution(self, execution_id: str) -> dict[str, Any]:
-        response = self.client.get(f"/api/v1/executions/{execution_id}", params={"includeData": "true"})
+        response = self.client.get(
+            f"/api/v1/executions/{execution_id}",
+            params={
+                "includeData": "true",
+                "redactExecutionData": "true",
+            },
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def list_failed_executions(
+        self,
+        limit: int = 20,
+        cursor: str | None = None,
+        workflow_id: str | None = None,
+    ) -> dict[str, Any]:
+        params: dict[str, str | int] = {
+            "status": "error",
+            "limit": max(1, min(limit, 100)),
+            "includeData": "false",
+        }
+        if cursor:
+            params["cursor"] = cursor
+        if workflow_id:
+            params["workflowId"] = workflow_id
+
+        response = self.client.get("/api/v1/executions", params=params)
         response.raise_for_status()
         return response.json()
 
