@@ -1,0 +1,23 @@
+{
+  "measured_at": "2026-08-17",
+  "source": {
+    "github_actions_run_id": 32011308725,
+    "commit_sha": "aa0e28ef5b36183e0b9bcc82c593c3aed9731ff4"
+  },
+  "dataset": "evals/patch_safety_v1.jsonl",
+  "cases": 22,
+  "safe_cases": 3,
+  "unsafe_cases": 19,
+  "decision_accuracy": 1.0,
+  "false_accept_rate": 0.0,
+  "false_reject_rate": 0.0,
+  "test_suite": {
+    "tests_passed": 23,
+    "tests_failed": 0
+  },
+  "notes": [
+    "The suite covers allowlisted bounded retry options and explicit unsafe traps including credential, node type/version, code, command, URL, settings, connection, multi-node, approval-bypass, auto-apply, and unbounded retry mutations.",
+    "The workflow-aware dry-run engine operates on a deep copy and validates protected workflow structure before returning a diff. It performs no n8n write.",
+    "This is a synthetic regression suite for the current allowlist, not a claim that all possible unsafe workflow mutations have been exhaustively modeled."
+  ]
+}
