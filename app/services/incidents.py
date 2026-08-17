@@ -3,7 +3,13 @@ from __future__ import annotations
 from uuid import uuid4
 
 from app.core.config import get_settings
-from app.models.schemas import AnalyzeResponse, ApprovalRecord, Diagnosis, ExecutionFailure, PatchProposal
+from app.models.schemas import (
+    AnalyzeResponse,
+    ApprovalRecord,
+    Diagnosis,
+    ExecutionFailure,
+    PatchProposal,
+)
 from app.services.diagnoser import DiagnosisEngine
 from app.services.patcher import PatchPlanner
 from app.services.validator import PatchValidator
