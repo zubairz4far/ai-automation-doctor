@@ -1,0 +1,20 @@
+{
+  "measured_at": "2026-08-17",
+  "source": {
+    "github_actions_run_id": 32010646804,
+    "commit_sha": "a90843b3fe299c0ea6279940e5447c1245fe93a0"
+  },
+  "dataset": "evals/failure_taxonomy_v2.jsonl",
+  "cases": 64,
+  "classification_accuracy": 1.0,
+  "retry_safety_accuracy": 1.0,
+  "test_suite": {
+    "tests_passed": 15,
+    "tests_failed": 0
+  },
+  "notes": [
+    "This is a synthetic, hand-labeled adversarial regression suite for the deterministic baseline.",
+    "It includes status/message conflicts, ordinary HTTP 404 traps, ambiguous 400/5xx cases, transport errors, credential failures, mapping failures, webhook failures, and cases where the correct result is unknown/no retry.",
+    "A perfect score on this bounded suite is not a claim of universal n8n failure-classification accuracy. Real execution samples and model-assisted comparisons remain future evaluation work."
+  ]
+}
