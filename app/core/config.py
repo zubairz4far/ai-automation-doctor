@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     n8n_api_key: str | None = None
     n8n_timeout_seconds: float = 20.0
     allow_workflow_mutation: bool = False
+    allow_execution_retry: bool = False
     max_patch_operations: int = 8
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
