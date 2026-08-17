@@ -38,5 +38,11 @@ jobs:
           python -m scripts.evaluate_patch_safety \
             --min-decision-accuracy 1.0 \
             --max-false-accept-rate 0.0
+      - name: Remediation safety benchmark V1
+        run: |
+          python -m scripts.evaluate_remediation_safety \
+            --min-decision-accuracy 1.0 \
+            --max-unsafe-write-rate 0.0 \
+            --max-unsafe-retry-rate 0.0
       - name: Build Docker image
         run: docker build -t ai-automation-doctor:ci .
