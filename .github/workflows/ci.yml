@@ -24,7 +24,14 @@ jobs:
         run: ruff check .
       - name: Tests
         run: pytest -q
-      - name: Taxonomy benchmark
+      - name: Taxonomy benchmark V1
         run: python -m scripts.evaluate_taxonomy
+      - name: Taxonomy benchmark V2 hard suite
+        run: |
+          python -m scripts.evaluate_taxonomy \
+            --dataset evals/failure_taxonomy_v2.jsonl \
+            --output evals/results/taxonomy_v2.json \
+            --min-classification-accuracy 1.0 \
+            --min-retry-safety-accuracy 1.0
       - name: Build Docker image
         run: docker build -t ai-automation-doctor:ci .
