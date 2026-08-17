@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
@@ -92,7 +92,7 @@ class IncidentService:
             note=note,
             workflow_version_id=dry_run.workflow_version_id,
             workflow_snapshot_fingerprint=dry_run.workflow_snapshot_fingerprint,
-            approved_at=datetime.now(timezone.utc),
+            approved_at=datetime.now(UTC),
         )
         self.approvals[proposal_id] = record
         return record
