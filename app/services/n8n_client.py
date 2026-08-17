@@ -8,7 +8,7 @@ from app.core.config import Settings
 
 
 class N8NClient:
-    """Thin public-API client. Mutation methods are gated by Settings."""
+    """Thin public-API client with explicit gates around side-effecting operations."""
 
     def __init__(self, settings: Settings, client: httpx.Client | None = None):
         self.settings = settings
@@ -61,9 +61,34 @@ class N8NClient:
         response.raise_for_status()
         return response.json()
 
-    def update_workflow(self, workflow_id: str, workflow: dict[str, Any]) -> dict[str, Any]:
+    def update_workflow(
+        self,
+        workflow_id: str,
+        workflow: dict[str, Any],
+        *,
+        publish_if_active: bool = False,
+    ) -> dict[str, Any]:
         if not self.settings.allow_workflow_mutation:
             raise PermissionError("Workflow mutation is disabled by ALLOW_WORKFLOW_MUTATION=false.")
-        response = self.client.put(f"/api/v1/workflows/{workflow_id}", json=workflow)
+        response = self.client.put(
+            f"/api/v1/workflows/{workflow_id}",
+            params={"publishIfActive": str(publish_if_active).lower()},
+            json=workflow,
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def retry_execution(
+        self,
+        execution_id: str,
+        *,
+        load_workflow: bool = True,
+    ) -> dict[str, Any]:
+        if not self.settings.allow_execution_retry:
+            raise PermissionError("Execution retry is disabled by ALLOW_EXECUTION_RETRY=false.")
+        response = self.client.post(
+            f"/api/v1/executions/{execution_id}/retry",
+            json={"loadWorkflow": load_workflow},
+        )
         response.raise_for_status()
         return response.json()
