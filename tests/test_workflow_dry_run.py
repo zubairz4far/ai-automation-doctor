@@ -4,12 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from app.models.schemas import (
-    ExecutionFailure,
-    PatchOperation,
-    PatchProposal,
-    RiskLevel,
-)
+from app.models.schemas import ExecutionFailure, PatchOperation, PatchProposal
 from app.services.diagnoser import DiagnosisEngine
 from app.services.patcher import PatchPlanner
 from app.services.validator import PatchValidationError, PatchValidator
