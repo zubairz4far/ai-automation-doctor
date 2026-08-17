@@ -1,0 +1,9 @@
+{"id":"auth-001","error_message":"401 Unauthorized: invalid API key","status_code":401,"expected_class":"authentication","retry_safe":false}
+{"id":"auth-002","error_message":"OAuth token expired","status_code":403,"expected_class":"authentication","retry_safe":false}
+{"id":"rate-001","error_message":"429 Too Many Requests","status_code":429,"expected_class":"rate_limit","retry_safe":true}
+{"id":"rate-002","error_message":"Quota exceeded for this minute","status_code":null,"expected_class":"rate_limit","retry_safe":true}
+{"id":"timeout-001","error_message":"Request timed out after 30000ms","status_code":null,"expected_class":"timeout","retry_safe":true}
+{"id":"network-001","error_message":"connect ECONNREFUSED 10.0.0.5:443","status_code":null,"expected_class":"network","retry_safe":true}
+{"id":"mapping-001","error_message":"Cannot read properties of undefined (reading 'email')","status_code":null,"expected_class":"data_mapping","retry_safe":false}
+{"id":"mapping-002","error_message":"ExpressionError: no data found for item","status_code":null,"expected_class":"data_mapping","retry_safe":false}
+{"id":"unknown-001","error_message":"Node failed for an unexpected reason","status_code":null,"expected_class":"unknown","retry_safe":false}

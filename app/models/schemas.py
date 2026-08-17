@@ -1,0 +1,81 @@
+from __future__ import annotations
+
+from enum import StrEnum
+from typing import Any, Literal
+
+from pydantic import BaseModel, Field
+
+
+class FailureClass(StrEnum):
+    AUTH = "authentication"
+    RATE_LIMIT = "rate_limit"
+    TIMEOUT = "timeout"
+    NETWORK = "network"
+    DATA_MAPPING = "data_mapping"
+    WEBHOOK = "webhook"
+    CONFIGURATION = "configuration"
+    UNKNOWN = "unknown"
+
+
+class RiskLevel(StrEnum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+
+class ExecutionFailure(BaseModel):
+    execution_id: str
+    workflow_id: str
+    workflow_name: str | None = None
+    failed_node: str | None = None
+    node_type: str | None = None
+    error_message: str
+    error_stack: str | None = None
+    status_code: int | None = None
+    input_snapshot: dict[str, Any] | None = None
+    workflow_snapshot: dict[str, Any] | None = None
+
+
+class Diagnosis(BaseModel):
+    failure_class: FailureClass
+    confidence: float = Field(ge=0, le=1)
+    root_cause: str
+    evidence: list[str]
+    recommended_action: str
+    retry_safe: bool
+
+
+class PatchOperation(BaseModel):
+    op: Literal["replace", "add"]
+    path: str
+    value: Any
+    reason: str
+
+
+class PatchProposal(BaseModel):
+    proposal_id: str
+    workflow_id: str
+    diagnosis: Diagnosis
+    operations: list[PatchOperation]
+    risk: RiskLevel
+    requires_human_approval: bool = True
+    auto_apply_allowed: bool = False
+    validation_notes: list[str] = Field(default_factory=list)
+
+
+class AnalyzeResponse(BaseModel):
+    incident_id: str
+    diagnosis: Diagnosis
+    patch: PatchProposal | None = None
+
+
+class ApprovalRequest(BaseModel):
+    approved_by: str = Field(min_length=2, max_length=120)
+    note: str | None = Field(default=None, max_length=500)
+
+
+class ApprovalRecord(BaseModel):
+    proposal_id: str
+    approved: bool
+    approved_by: str
+    note: str | None = None

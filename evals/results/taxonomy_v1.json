@@ -1,0 +1,16 @@
+{
+  "cases": 9,
+  "classification_accuracy": 1.0,
+  "retry_safety_accuracy": 1.0,
+  "details": [
+    {"id":"auth-001","expected_class":"authentication","predicted_class":"authentication","class_ok":true,"retry_ok":true,"confidence":0.96},
+    {"id":"auth-002","expected_class":"authentication","predicted_class":"authentication","class_ok":true,"retry_ok":true,"confidence":0.96},
+    {"id":"rate-001","expected_class":"rate_limit","predicted_class":"rate_limit","class_ok":true,"retry_ok":true,"confidence":0.97},
+    {"id":"rate-002","expected_class":"rate_limit","predicted_class":"rate_limit","class_ok":true,"retry_ok":true,"confidence":0.97},
+    {"id":"timeout-001","expected_class":"timeout","predicted_class":"timeout","class_ok":true,"retry_ok":true,"confidence":0.92},
+    {"id":"network-001","expected_class":"network","predicted_class":"network","class_ok":true,"retry_ok":true,"confidence":0.91},
+    {"id":"mapping-001","expected_class":"data_mapping","predicted_class":"data_mapping","class_ok":true,"retry_ok":true,"confidence":0.86},
+    {"id":"mapping-002","expected_class":"data_mapping","predicted_class":"data_mapping","class_ok":true,"retry_ok":true,"confidence":0.86},
+    {"id":"unknown-001","expected_class":"unknown","predicted_class":"unknown","class_ok":true,"retry_ok":true,"confidence":0.35}
+  ]
+}
