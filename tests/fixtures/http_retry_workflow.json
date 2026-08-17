@@ -1,0 +1,87 @@
+{
+  "id": "workflow-7",
+  "name": "Lead Intake",
+  "active": true,
+  "versionId": "version-abc",
+  "nodes": [
+    {
+      "id": "node-webhook",
+      "name": "Lead Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "lead-webhook-id",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead"
+      }
+    },
+    {
+      "id": "node-http",
+      "name": "CRM / HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [260, 0],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "credential-id-123",
+          "name": "CRM Production"
+        }
+      },
+      "parameters": {
+        "url": "https://crm.example.com/leads",
+        "method": "POST",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "node-set",
+      "name": "Success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [520, 0],
+      "parameters": {
+        "assignments": {
+          "assignments": []
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Lead Webhook": {
+      "main": [
+        [
+          {
+            "node": "CRM / HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM / HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all"
+  },
+  "staticData": null,
+  "pinData": null,
+  "tags": []
+}
