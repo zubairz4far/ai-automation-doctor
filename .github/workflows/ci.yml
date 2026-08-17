@@ -24,6 +24,13 @@ jobs:
         run: ruff check .
       - name: Tests
         run: pytest -q
+      - name: Durability recovery and security
+        run: |
+          pytest -q \
+            tests/test_state_store.py \
+            tests/test_idempotency.py \
+            tests/test_security.py \
+            tests/test_retry_recovery_lookup.py
       - name: Taxonomy benchmark V1
         run: python -m scripts.evaluate_taxonomy
       - name: Taxonomy benchmark V2 hard suite
