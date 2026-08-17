@@ -1,0 +1,57 @@
+{
+  "release": "1.0.0",
+  "measured_at": "2026-08-17",
+  "source": {
+    "github_actions_run_id": 32015866583,
+    "commit_sha": "a105e3270f975f722c603a7ed68554703b386017",
+    "branch": "finalize-v1"
+  },
+  "ci": {
+    "ruff": "passed",
+    "tests_passed": 46,
+    "tests_failed": 0,
+    "durability_recovery_security_tests": 10,
+    "docker_build": "passed"
+  },
+  "diagnosis": {
+    "taxonomy_v1_cases": 9,
+    "taxonomy_v1_classification_accuracy": 1.0,
+    "taxonomy_v1_retry_safety_accuracy": 1.0,
+    "taxonomy_v2_cases": 64,
+    "taxonomy_v2_classification_accuracy": 1.0,
+    "taxonomy_v2_retry_safety_accuracy": 1.0
+  },
+  "patch_safety": {
+    "cases": 22,
+    "safe_cases": 3,
+    "unsafe_cases": 19,
+    "decision_accuracy": 1.0,
+    "unsafe_false_accept_rate": 0.0,
+    "safe_false_reject_rate": 0.0
+  },
+  "remediation_safety": {
+    "cases": 10,
+    "decision_accuracy": 1.0,
+    "unsafe_workflow_write_rate": 0.0,
+    "unsafe_execution_retry_rate": 0.0
+  },
+  "v1_regression_coverage": [
+    "SQLite incident/dry-run/approval persistence across process restart",
+    "per-proposal remediation lease concurrency rejection",
+    "completed remediation idempotent replay without a second workflow update or retry",
+    "workflow-update crash recovery using approved writable-definition fingerprint evidence",
+    "retry crash recovery using n8n retryOf execution metadata",
+    "fail-closed ambiguous retry recovery with no blind duplicate retry",
+    "raw input/workflow snapshots excluded from durable incident storage",
+    "operator-token protection when side-effect gates are enabled",
+    "metadata-only retry lookup scoped to the workflow",
+    "production Docker build of ai-automation-doctor 1.0.0"
+  ],
+  "limitations": [
+    "SQLite and the built-in lease are a single-service-instance baseline, not a distributed multi-replica lock.",
+    "Retry verification performs a bounded immediate read; nonterminal executions are returned as pending.",
+    "Ambiguous retry crash recovery intentionally requires manual reconciliation rather than risking a duplicate retry.",
+    "The evaluation sets are deterministic fixtures and mocks; no live production n8n workflow was mutated by the committed benchmark.",
+    "The built-in operator token is a shared-secret baseline; stronger production deployments should use an authenticated gateway or workload identity."
+  ]
+}
