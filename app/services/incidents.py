@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from typing import Any
 from uuid import uuid4
 
 from app.core.config import get_settings
@@ -9,17 +10,21 @@ from app.models.schemas import (
     Diagnosis,
     ExecutionFailure,
     PatchProposal,
+    WorkflowDryRunResponse,
 )
 from app.services.diagnoser import DiagnosisEngine
 from app.services.patcher import PatchPlanner
 from app.services.validator import PatchValidator
+from app.services.workflow_dry_run import WorkflowDryRunEngine
 
 
 class IncidentService:
     def __init__(self):
+        settings = get_settings()
         self.diagnoser = DiagnosisEngine()
         self.patcher = PatchPlanner()
-        self.validator = PatchValidator(get_settings().max_patch_operations)
+        self.validator = PatchValidator(settings.max_patch_operations)
+        self.dry_runner = WorkflowDryRunEngine(self.validator)
         self.proposals: dict[str, PatchProposal] = {}
         self.approvals: dict[str, ApprovalRecord] = {}
 
@@ -35,9 +40,18 @@ class IncidentService:
             patch=patch,
         )
 
-    def approve(self, proposal_id: str, approved_by: str, note: str | None) -> ApprovalRecord:
+    def get_proposal(self, proposal_id: str) -> PatchProposal:
         if proposal_id not in self.proposals:
             raise KeyError(proposal_id)
+        return self.proposals[proposal_id]
+
+    def dry_run(self, proposal_id: str, workflow: dict[str, Any]) -> WorkflowDryRunResponse:
+        proposal = self.get_proposal(proposal_id)
+        response, _ = self.dry_runner.dry_run(workflow, proposal)
+        return response
+
+    def approve(self, proposal_id: str, approved_by: str, note: str | None) -> ApprovalRecord:
+        self.get_proposal(proposal_id)
         record = ApprovalRecord(
             proposal_id=proposal_id,
             approved=True,
