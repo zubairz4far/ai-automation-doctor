@@ -31,6 +31,7 @@ class ExecutionFailure(BaseModel):
     node_type: str | None = None
     error_message: str
     error_stack: str | None = None
+    error_code: str | None = None
     status_code: int | None = None
     input_snapshot: dict[str, Any] | None = None
     workflow_snapshot: dict[str, Any] | None = None
