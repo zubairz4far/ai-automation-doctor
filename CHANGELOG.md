@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.0 — 2026-08-21
+
+Real-model diagnosis evaluation release.
+
+- Added a 32-case hard AI diagnosis challenge set designed to make the deterministic engine abstain rather than succeed on keyword matches.
+- Added a live OpenAI-compatible benchmark runner with configurable model, endpoint, timeout, output, and quality thresholds.
+- Added baseline-vs-AI accuracy delta, schema validity, provider failure rate, valid-output accuracy, and per-class metrics.
+- Added regression tests that lock the challenge set's deterministic-abstention property and evaluator scoring behavior.
+- Documented local vLLM evaluation for Qwen3-1.7B and optional comparison against the existing QLoRA tool-calling adapter.
+- Kept real-model calls out of CI so pull requests never require secrets, paid inference, or GPU access.
+
 ## 1.1.0 — 2026-08-21
 
 Bounded AI diagnosis release.
