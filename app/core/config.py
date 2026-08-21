@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     allow_workflow_mutation: bool = False
     allow_execution_retry: bool = False
     operator_token: str | None = None
+    public_demo_only: bool = False
     max_patch_operations: int = 8
     state_db_path: str = "./data/ai-automation-doctor.db"
     remediation_lease_seconds: int = 30
