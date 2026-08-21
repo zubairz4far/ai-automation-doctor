@@ -1,0 +1,32 @@
+{"id":"blind2-auth-01","expected_class":"authentication","node_type":"n8n-nodes-base.httpRequest","error_message":"Signed request identifies a key alias the tenant no longer recognizes."}
+{"id":"blind2-auth-02","expected_class":"authentication","node_type":"n8n-nodes-base.httpRequest","error_message":"Caller subject does not match any identity bound to this client."}
+{"id":"blind2-auth-03","expected_class":"authentication","node_type":"n8n-nodes-base.httpRequest","error_message":"Proof attached to the request was produced by a principal not accepted for this resource."}
+{"id":"blind2-auth-04","expected_class":"authentication","node_type":"n8n-nodes-base.httpRequest","error_message":"Service account policy rejected the presented signer fingerprint."}
+{"id":"blind2-rate-01","expected_class":"rate_limit","node_type":"n8n-nodes-base.httpRequest","error_message":"All invocation permits for the current sixty-second window are consumed."}
+{"id":"blind2-rate-02","expected_class":"rate_limit","node_type":"n8n-nodes-base.httpRequest","error_message":"Concurrent work slots are occupied; additional calls are deferred until capacity frees."}
+{"id":"blind2-rate-03","expected_class":"rate_limit","node_type":"n8n-nodes-base.httpRequest","error_message":"The tenant burst bucket is empty and will accept work after the next refill."}
+{"id":"blind2-rate-04","expected_class":"rate_limit","node_type":"n8n-nodes-base.httpRequest","error_message":"Usage counter reached its ceiling for the active service interval."}
+{"id":"blind2-timeout-01","expected_class":"timeout","node_type":"n8n-nodes-base.httpRequest","error_message":"Gateway ended the exchange after the upstream service deadline elapsed."}
+{"id":"blind2-timeout-02","expected_class":"timeout","node_type":"n8n-nodes-base.httpRequest","error_message":"No response headers arrived before the configured response window closed."}
+{"id":"blind2-timeout-03","expected_class":"timeout","node_type":"n8n-nodes-base.httpRequest","error_message":"Remote task exceeded the allowed latency budget and was abandoned."}
+{"id":"blind2-timeout-04","expected_class":"timeout","node_type":"n8n-nodes-base.httpRequest","error_message":"Connector stopped waiting after the maximum service duration passed without completion."}
+{"id":"blind2-network-01","expected_class":"network","node_type":"n8n-nodes-base.httpRequest","error_message":"TLS negotiation ended before a secure session could be established with the peer."}
+{"id":"blind2-network-02","expected_class":"network","node_type":"n8n-nodes-base.httpRequest","error_message":"TCP handshake with the upstream host could not be completed."}
+{"id":"blind2-network-03","expected_class":"network","node_type":"n8n-nodes-base.httpRequest","error_message":"Resolver returned no usable address for the upstream hostname."}
+{"id":"blind2-network-04","expected_class":"network","node_type":"n8n-nodes-base.httpRequest","error_message":"Peer reset the transport while the socket session was being established."}
+{"id":"blind2-mapping-01","expected_class":"data_mapping","node_type":"n8n-nodes-base.set","error_message":"Selector invoice.total produced an object while the target field expects a numeric scalar."}
+{"id":"blind2-mapping-02","expected_class":"data_mapping","node_type":"n8n-nodes-base.set","error_message":"Current item has no profile.email member referenced by the mapping template."}
+{"id":"blind2-mapping-03","expected_class":"data_mapping","node_type":"n8n-nodes-base.set","error_message":"Iterator requested an index beyond the length of the incoming batch."}
+{"id":"blind2-mapping-04","expected_class":"data_mapping","node_type":"n8n-nodes-base.set","error_message":"Expression resolved to an array where the downstream field expects one scalar value."}
+{"id":"blind2-webhook-01","expected_class":"webhook","node_type":"n8n-nodes-base.httpRequest","error_message":"Callback path has no active listener in the deployed revision."}
+{"id":"blind2-webhook-02","expected_class":"webhook","node_type":"n8n-nodes-base.httpRequest","error_message":"Production callback URL points to a route absent from the active deployment."}
+{"id":"blind2-webhook-03","expected_class":"webhook","node_type":"n8n-nodes-base.httpRequest","error_message":"External event delivery reached an endpoint not mounted by the active workflow."}
+{"id":"blind2-webhook-04","expected_class":"webhook","node_type":"n8n-nodes-base.httpRequest","error_message":"Listener for external callbacks was not exposed after the workflow became active."}
+{"id":"blind2-config-01","expected_class":"configuration","node_type":"n8n-nodes-base.httpRequest","error_message":"Selected action expects form encoding but the node is configured to send a JSON body."}
+{"id":"blind2-config-02","expected_class":"configuration","node_type":"n8n-nodes-base.httpRequest","error_message":"Connector mode is read-only while the selected operation requires a write-capable mode."}
+{"id":"blind2-config-03","expected_class":"configuration","node_type":"n8n-nodes-base.httpRequest","error_message":"Resource key format is not accepted by the operation selected on this node."}
+{"id":"blind2-config-04","expected_class":"configuration","node_type":"n8n-nodes-base.httpRequest","error_message":"Node is set to binary transfer while the chosen action consumes structured JSON payloads."}
+{"id":"blind2-unknown-01","expected_class":"unknown","node_type":"n8n-nodes-base.httpRequest","error_message":"Provider ended processing under opaque condition NOVA_17 with no diagnostic explanation."}
+{"id":"blind2-unknown-02","expected_class":"unknown","node_type":"n8n-nodes-base.httpRequest","error_message":"Remote service returned undocumented state HELIX_4 and supplied no additional context."}
+{"id":"blind2-unknown-03","expected_class":"unknown","node_type":"n8n-nodes-base.httpRequest","error_message":"Operation stopped under internal branch SIGMA_C without a documented reason."}
+{"id":"blind2-unknown-04","expected_class":"unknown","node_type":"n8n-nodes-base.httpRequest","error_message":"Execution ended after an unspecified provider policy condition labeled P9."}
