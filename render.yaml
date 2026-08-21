@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: ai-automation-doctor-demo
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: false
+    envVars:
+      - key: PUBLIC_DEMO_ONLY
+        value: "true"
+      - key: ALLOW_WORKFLOW_MUTATION
+        value: "false"
+      - key: ALLOW_EXECUTION_RETRY
+        value: "false"
+      - key: AI_DIAGNOSIS_ENABLED
+        value: "false"
+      - key: STATE_DB_PATH
+        value: /tmp/ai-automation-doctor-demo.db

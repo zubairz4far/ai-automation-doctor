@@ -1,0 +1,66 @@
+name: Capture demo assets
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "app/demo.py"
+      - "app/main.py"
+      - "scripts/capture_demo_assets.py"
+      - ".github/workflows/capture-demo-assets.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install app and capture dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]" playwright pillow
+          python -m playwright install --with-deps chromium
+
+      - name: Start read-only demo
+        env:
+          PUBLIC_DEMO_ONLY: "true"
+          ALLOW_WORKFLOW_MUTATION: "false"
+          ALLOW_EXECUTION_RETRY: "false"
+          AI_DIAGNOSIS_ENABLED: "false"
+          STATE_DB_PATH: /tmp/ai-automation-doctor-demo.db
+        run: |
+          uvicorn app.main:app --host 127.0.0.1 --port 8000 > /tmp/aad-demo.log 2>&1 &
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8000/health >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/aad-demo.log
+          exit 1
+
+      - name: Capture screenshots and GIF
+        run: python scripts/capture_demo_assets.py
+
+      - name: Commit generated assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/assets/demo
+          if git diff --cached --quiet; then
+            echo "Demo assets are unchanged."
+            exit 0
+          fi
+          git commit -m "Refresh interactive demo screenshots"
+          git push
