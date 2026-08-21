@@ -1,0 +1,26 @@
+{
+  "dataset": "evals/ai_diagnosis_v1.jsonl",
+  "cases": 32,
+  "base": {
+    "model": "Qwen/Qwen3-1.7B",
+    "cases": 32,
+    "overall_classification_accuracy": 0.3125,
+    "classification_accuracy_on_normalized_valid_outputs": 0.3448275862068966,
+    "raw_schema_validity_rate": 0.90625,
+    "normalized_schema_validity_rate": 0.90625,
+    "normalization_usage_rate": 0.0,
+    "provider_failure_rate": 0.0
+  },
+  "adapter": {
+    "model": "tool-calling",
+    "cases": 32,
+    "overall_classification_accuracy": 0.25,
+    "classification_accuracy_on_normalized_valid_outputs": 0.3076923076923077,
+    "raw_schema_validity_rate": 0.8125,
+    "normalized_schema_validity_rate": 0.8125,
+    "normalization_usage_rate": 0.0,
+    "provider_failure_rate": 0.1875
+  },
+  "adapter_minus_base_accuracy_pp": -6.25,
+  "adapter_minus_base_raw_schema_validity_pp": -9.375
+}
