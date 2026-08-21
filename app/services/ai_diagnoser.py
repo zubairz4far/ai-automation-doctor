@@ -4,7 +4,7 @@ import json
 from typing import Protocol
 
 import httpx
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.schemas import AIInsight, Diagnosis, ExecutionFailure, FailureClass
 from app.services.diagnoser import DiagnosisEngine
@@ -20,6 +20,19 @@ class AIInsightPayload(BaseModel):
     root_cause: str = Field(min_length=1, max_length=600)
     evidence: list[str] = Field(min_length=1, max_length=8)
     recommended_action: str = Field(min_length=1, max_length=600)
+
+    @field_validator("evidence", mode="before")
+    @classmethod
+    def normalize_single_evidence_string(cls, value: object) -> object:
+        """Accept the common LLM shape `evidence: "..."` as one evidence item.
+
+        This normalization is deliberately narrow: only a single string is coerced.
+        Extra keys, invalid classes, invalid confidence values, empty evidence, and all
+        other malformed shapes remain rejected by the strict Pydantic schema.
+        """
+        if isinstance(value, str):
+            return [value]
+        return value
 
 
 class AIInsightProvider(Protocol):
