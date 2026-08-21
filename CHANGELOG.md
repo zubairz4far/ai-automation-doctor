@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3.0 — 2026-08-21
+
+Interactive portfolio demo release.
+
+- Added a responsive `/demo` interface for entering or selecting sample n8n failures and viewing the diagnosis flow.
+- Added a read-only `/v1/demo/analyze` endpoint that performs diagnosis and patch preview entirely in memory without durable incident writes.
+- The demo cannot approve remediation, mutate a workflow, or retry an execution regardless of production side-effect settings.
+- Displays deterministic class, confidence, evidence, retry-safety decision, optional AI advisory, and bounded patch preview.
+- Added benchmark cards for the measured second-blind Qwen3-1.7B result: **93.75% accuracy**, **100% raw schema validity**, and **0% provider failures**.
+- Added regression coverage for the demo page, read-only safety flags, patch previews, and unknown-case behavior.
+
 ## 1.2.1 — 2026-08-21
 
 Evaluation-hardening release.
