@@ -4,6 +4,10 @@
 
 v1.2.1 records the measured outcome of the real-model diagnosis work and hardens the model-selection methodology around blind evaluation rather than development-set tuning.
 
+## Release verification
+
+PR #8 was created from the v1.2.1 `main` state specifically to expose the full pull-request CI run. The first runs caught Ruff and prompt-contract regression issues; those were fixed before merge. The final CI run passed every configured gate: package install, Ruff lint, the full pytest suite (58 tests), AI advisory/benchmark safety tests, durability/recovery/security tests, Taxonomy V1, Taxonomy V2 hard suite, Patch Safety V1, Remediation Safety V1, and the production Docker image build. The verified fixes were squash-merged to `main` as commit `04a02fcc4dbbca42951ce9ace39df3d8fc01e071`.
+
 ## Measured diagnosis results
 
 Three balanced 32-case datasets are used across authentication, rate limit, timeout, network, data mapping, webhook, configuration, and unknown failures. Integrity tests require the deterministic engine to abstain on every benchmark case so the LLM is evaluated only on failures the rules engine cannot confidently classify.
