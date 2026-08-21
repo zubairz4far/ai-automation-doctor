@@ -101,7 +101,7 @@ def test_provider_failure_falls_back_to_deterministic_result():
     assert provider.calls == 1
 
 
-def test_provider_receives_privacy_minimized_context_only():
+def test_provider_receives_privacy_minimized_context_without_baseline_anchoring():
     captured = {}
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -145,6 +145,15 @@ def test_provider_receives_privacy_minimized_context_only():
     assert "Customer Secret Node" not in serialized
     assert "input_snapshot" not in serialized
     assert "workflow_snapshot" not in serialized
+    assert "deterministic_baseline" not in user_context
+    assert "retry_safe" not in serialized
+    assert set(user_context) == {
+        "node_type",
+        "error_message",
+        "error_stack",
+        "error_code",
+        "status_code",
+    }
 
 
 def test_provider_normalizes_single_evidence_string():
