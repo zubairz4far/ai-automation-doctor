@@ -138,6 +138,13 @@ def test_provider_receives_privacy_minimized_independent_context_only():
 
     assert result.ai_insight is not None
     assert captured["max_tokens"] == 256
+    response_format = captured["response_format"]
+    assert response_format["type"] == "json_schema"
+    assert response_format["json_schema"]["strict"] is True
+    schema = response_format["json_schema"]["schema"]
+    assert schema["additionalProperties"] is False
+    assert schema["properties"]["evidence"]["type"] == "array"
+
     user_context = json.loads(captured["messages"][1]["content"])
     serialized = json.dumps(user_context)
     assert "private@example.com" not in serialized
@@ -151,16 +158,17 @@ def test_provider_receives_privacy_minimized_independent_context_only():
     assert "The failure does not match the deterministic baseline taxonomy" not in serialized
 
 
-def test_provider_prompt_requires_evidence_array_and_independent_classification():
+def test_provider_prompt_requires_independent_grounded_classification():
     provider = OpenAICompatibleInsightProvider(
         base_url="http://ai.local/v1",
         model="test-model",
     )
     prompt = provider._system_prompt()
 
-    assert "evidence MUST be a JSON array" in prompt
     assert "independent" in prompt
     assert "Use unknown only when" in prompt
+    assert "never invent a signal" in prompt
+    assert "TLS connection ended before response headers" not in prompt
 
 
 def test_provider_output_cannot_smuggle_retry_or_patch_decisions():
