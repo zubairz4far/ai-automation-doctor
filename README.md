@@ -1,16 +1,17 @@
 # AI Automation Doctor
 
-**v1.1.0** — a production-shaped reliability service for failed n8n automations with bounded AI advisory diagnosis.
+**v1.2.0** — a production-shaped reliability service for failed n8n automations with bounded AI advisory diagnosis and real-model evaluation.
 
 AI Automation Doctor turns failed n8n executions into privacy-minimized incidents, classifies likely root cause and retry safety, proposes a narrowly constrained retry patch, validates it against the current workflow, binds explicit human approval to the exact validated snapshot, and can execute a guarded **apply → verify → retry → verify** flow.
 
-v1.1 adds an opt-in AI advisory for deterministic unknown/low-confidence failures. The deterministic diagnosis remains authoritative for failure class, retry safety, patch planning, approval, and remediation. The AI path is disabled by default, receives only privacy-minimized metadata, and cannot directly mutate workflow JSON.
+v1.2 adds a reproducible real-model benchmark for the advisory layer. A 32-case challenge set is deliberately written so the deterministic engine abstains, allowing an OpenAI-compatible model to be measured on genuinely hard cases without changing the control-plane safety contract.
 
 ## What this project demonstrates
 
 - FastAPI service design around a real external automation platform
 - deterministic failure diagnosis with measured regression suites
 - bounded AI advisory analysis with strict output validation and fail-closed fallback
+- real-model AI evaluation with baseline-vs-model, schema-validity, failure-rate, and per-class metrics
 - privacy-minimized n8n execution ingestion and AI provider context
 - workflow-aware structural validation rather than free-form JSON editing
 - human-in-the-loop approval bound to `versionId` + SHA-256 snapshot evidence
@@ -96,6 +97,23 @@ The AI path exists to improve operator context for failures that the determinist
 
 The built-in provider targets OpenAI-compatible chat-completions endpoints so the advisory can be backed by a hosted model or a compatible local gateway without changing the safety contract.
 
+## Real-model evaluation
+
+`evals/ai_diagnosis_v1.jsonl` contains 32 synthetic, hand-labeled hard cases. CI verifies that the deterministic baseline returns `unknown` for every case, so the dataset measures incremental advisory value instead of easy keyword matching.
+
+Run a compatible model endpoint, then execute:
+
+```bash
+python -m scripts.evaluate_ai_diagnosis \
+  --api-base-url http://localhost:8000/v1 \
+  --model Qwen/Qwen3-1.7B \
+  --output evals/results/ai_diagnosis_qwen3_1.7b.json
+```
+
+The result reports baseline accuracy, AI accuracy, accuracy delta, schema validity, provider failure rate, valid-output accuracy, per-class metrics, and case-level predictions. No API key is written to the output.
+
+See [`docs/real_model_evaluation.md`](docs/real_model_evaluation.md) for the Qwen3/vLLM runbook and optional comparison against `zubairz4far/qwen3-1.7b-tool-calling`.
+
 ## Safety contract
 
 The automatic mutation surface is intentionally small.
@@ -179,11 +197,11 @@ Protect the service with TLS/network controls and use a currently patched n8n re
 ## Docker
 
 ```bash
-docker build -t ai-automation-doctor:1.1.0 .
+docker build -t ai-automation-doctor:1.2.0 .
 docker run --rm -p 8000:8000 \
   -v doctor-data:/app/data \
   --env-file .env \
-  ai-automation-doctor:1.1.0
+  ai-automation-doctor:1.2.0
 ```
 
 The SQLite path must live on persistent storage if restart recovery is required.
@@ -251,7 +269,7 @@ curl http://localhost:8000/v1/patches/<proposal-id>/timeline
 
 ## Measured evaluation
 
-The v1.0 release baseline passed **46 automated tests** in GitHub Actions while retaining all earlier safety benchmarks. v1.1 adds dedicated regression coverage for the AI advisory boundary without weakening those deterministic gates.
+The v1.0 release baseline passed **46 automated tests** in GitHub Actions while retaining all earlier safety benchmarks. v1.1 added dedicated regression coverage for the AI advisory boundary. v1.2 adds a live-model benchmark harness and a 32-case challenge set; no live-model score is claimed until a real endpoint run is recorded.
 
 | Suite | Cases | Result |
 |---|---:|---:|
@@ -259,12 +277,13 @@ The v1.0 release baseline passed **46 automated tests** in GitHub Actions while 
 | Taxonomy V2 hard | 64 | **100% classification + retry-safety** |
 | Patch Safety V1 | 22 | **100% decisions, 0% unsafe false accepts** |
 | Remediation Safety V1 | 10 | **100% state-machine decisions, 0% unsafe writes, 0% unsafe retries** |
+| AI Diagnosis V1 challenge | 32 | **CI-locked deterministic abstention; live model score pending measured run** |
 
-The v1.1 AI regression set covers high-confidence AI gating, advisory-only enrichment of unknown failures, fail-closed provider errors, privacy-minimized provider context, and rejection of outputs attempting to add retry or patch authority.
+The AI regression set covers high-confidence AI gating, advisory-only enrichment of unknown failures, fail-closed provider errors, privacy-minimized provider context, rejection of outputs attempting to add retry or patch authority, challenge-set integrity, and benchmark scoring.
 
-Machine-readable v1 evidence is committed at [`evals/results/v1_release_summary.json`](evals/results/v1_release_summary.json).
+Machine-readable v1 release evidence is committed at [`evals/results/v1_release_summary.json`](evals/results/v1_release_summary.json). Real-model v1.2 output is written only after an explicit endpoint evaluation.
 
-These are bounded deterministic regression results plus mocked AI-boundary tests. The datasets are synthetic/hand-labeled and remediation is exercised with mocks. They do **not** claim universal correctness for every n8n node, third-party API, model provider, distributed concurrency condition, or infrastructure failure, and this repository does not claim that its benchmark modified a live production n8n workflow.
+These are bounded deterministic regression results plus mocked AI-boundary tests and a synthetic/hand-labeled live-model challenge set. They do **not** claim universal correctness for every n8n node, third-party API, model provider, distributed concurrency condition, or infrastructure failure, and this repository does not claim that its benchmark modified a live production n8n workflow.
 
 ## CI release gates
 
@@ -272,13 +291,16 @@ Every push and pull request runs:
 
 1. package installation
 2. Ruff linting
-3. full pytest suite, including AI-boundary regressions
-4. dedicated durability/recovery/security regression set
-5. 9-case Taxonomy V1
-6. 64-case hard Taxonomy V2
-7. 22-case Patch Safety V1 with zero unsafe false accepts
-8. 10-case Remediation Safety V1 with zero unsafe writes/retries
-9. production Docker image build
+3. full pytest suite
+4. dedicated AI advisory + challenge-set integrity regressions
+5. dedicated durability/recovery/security regression set
+6. 9-case Taxonomy V1
+7. 64-case hard Taxonomy V2
+8. 22-case Patch Safety V1 with zero unsafe false accepts
+9. 10-case Remediation Safety V1 with zero unsafe writes/retries
+10. production Docker image build
+
+Live model inference is intentionally not a CI dependency: pull requests require no provider secret, paid inference, or GPU runner.
 
 ## Operational limitations
 
@@ -287,6 +309,7 @@ Every push and pull request runs:
 - If crash recovery cannot prove whether an execution retry already started, it deliberately stops for manual reconciliation.
 - Built-in operator authentication is a shared-secret baseline. Stronger deployments should put the service behind mTLS/OIDC/workload identity or another trusted gateway.
 - AI diagnosis is advisory only; deterministic diagnosis remains the control-plane source for retry safety and patch planning.
+- The v1.2 challenge set is synthetic and intended to compare models, not to represent production incident prevalence.
 - No LLM is allowed to directly mutate workflow JSON.
 
 ## Release history

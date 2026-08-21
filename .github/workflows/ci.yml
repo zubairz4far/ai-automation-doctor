@@ -24,6 +24,11 @@ jobs:
         run: ruff check .
       - name: Tests
         run: pytest -q
+      - name: AI advisory and benchmark safety
+        run: |
+          pytest -q \
+            tests/test_ai_diagnoser.py \
+            tests/test_ai_evaluation.py
       - name: Durability recovery and security
         run: |
           pytest -q \
