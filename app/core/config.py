@@ -15,6 +15,14 @@ class Settings(BaseSettings):
     state_db_path: str = "./data/ai-automation-doctor.db"
     remediation_lease_seconds: int = 30
 
+    # AI diagnosis is advisory-only and disabled unless explicitly configured.
+    ai_diagnosis_enabled: bool = False
+    ai_api_base_url: str | None = None
+    ai_api_key: str | None = None
+    ai_model: str | None = None
+    ai_timeout_seconds: float = 20.0
+    ai_baseline_confidence_threshold: float = 0.80
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

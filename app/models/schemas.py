@@ -4,7 +4,7 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class FailureClass(StrEnum):
@@ -38,6 +38,20 @@ class ExecutionFailure(BaseModel):
     workflow_snapshot: dict[str, Any] | None = None
 
 
+class AIInsight(BaseModel):
+    """Advisory-only AI interpretation; never controls retries or workflow mutation."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    failure_class: FailureClass
+    confidence: float = Field(ge=0, le=1)
+    root_cause: str = Field(min_length=1, max_length=600)
+    evidence: list[str] = Field(min_length=1, max_length=8)
+    recommended_action: str = Field(min_length=1, max_length=600)
+    provider: str
+    model: str
+
+
 class Diagnosis(BaseModel):
     failure_class: FailureClass
     confidence: float = Field(ge=0, le=1)
@@ -45,6 +59,7 @@ class Diagnosis(BaseModel):
     evidence: list[str]
     recommended_action: str
     retry_safe: bool
+    ai_insight: AIInsight | None = None
 
 
 class PatchOperation(BaseModel):
