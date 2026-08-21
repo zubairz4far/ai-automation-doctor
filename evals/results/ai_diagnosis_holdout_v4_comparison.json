@@ -1,0 +1,18 @@
+{
+  "dataset": "evals/ai_diagnosis_holdout_v2.jsonl",
+  "experiment": "holdout_boundary_prompt_v4",
+  "cases": 32,
+  "base": {
+    "dev_v3_accuracy": 0.8125,
+    "holdout_accuracy": 0.875,
+    "holdout_raw_schema_validity": 0.9375,
+    "holdout_provider_failure_rate": 0.0
+  },
+  "adapter": {
+    "dev_v3_accuracy": 0.84375,
+    "holdout_accuracy": 0.875,
+    "holdout_raw_schema_validity": 0.9375,
+    "holdout_provider_failure_rate": 0.0
+  },
+  "holdout_adapter_minus_base_accuracy_pp": 0.0
+}
