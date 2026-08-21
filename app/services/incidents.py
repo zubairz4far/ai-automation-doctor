@@ -16,7 +16,7 @@ from app.models.schemas import (
     TimelineEvent,
     WorkflowDryRunResponse,
 )
-from app.services.diagnoser import DiagnosisEngine
+from app.services.ai_diagnoser import GuardedDiagnosisEngine, OpenAICompatibleInsightProvider
 from app.services.patcher import PatchPlanner
 from app.services.state_store import SQLiteStateStore
 from app.services.validator import PatchValidator
@@ -39,7 +39,25 @@ class IncidentService:
     ):
         self.settings = settings or get_settings()
         self.store = store or SQLiteStateStore(self.settings.state_db_path)
-        self.diagnoser = DiagnosisEngine()
+
+        provider = None
+        if (
+            self.settings.ai_diagnosis_enabled
+            and self.settings.ai_api_base_url
+            and self.settings.ai_model
+        ):
+            provider = OpenAICompatibleInsightProvider(
+                base_url=self.settings.ai_api_base_url,
+                api_key=self.settings.ai_api_key,
+                model=self.settings.ai_model,
+                timeout_seconds=self.settings.ai_timeout_seconds,
+            )
+
+        self.diagnoser = GuardedDiagnosisEngine(
+            provider=provider,
+            enabled=self.settings.ai_diagnosis_enabled,
+            confidence_threshold=self.settings.ai_baseline_confidence_threshold,
+        )
         self.patcher = PatchPlanner()
         self.validator = PatchValidator(self.settings.max_patch_operations)
         self.dry_runner = WorkflowDryRunEngine(self.validator)
@@ -74,6 +92,7 @@ class IncidentService:
                     "failure_class": diagnosis.failure_class,
                     "confidence": diagnosis.confidence,
                     "retry_safe": diagnosis.retry_safe,
+                    "ai_advisory_attached": diagnosis.ai_insight is not None,
                     "workflow_id": failure.workflow_id,
                     "execution_id": failure.execution_id,
                     "patch_operations": len(patch.operations),
