@@ -1,0 +1,53 @@
+{
+  "dataset": "evals/ai_diagnosis_holdout_v2.jsonl",
+  "experiment": "holdout_boundary_prompt_v4",
+  "cases": 32,
+  "deterministic_baseline_accuracy": 0.125,
+  "base": {
+    "model": "Qwen/Qwen3-1.7B",
+    "overall_classification_accuracy": 0.875,
+    "classification_accuracy_on_valid_outputs": 0.9333333333333333,
+    "raw_schema_validity_rate": 0.9375,
+    "provider_failure_rate": 0.0,
+    "per_class_correct": {
+      "authentication": 4,
+      "rate_limit": 4,
+      "timeout": 4,
+      "network": 4,
+      "data_mapping": 4,
+      "webhook": 4,
+      "configuration": 2,
+      "unknown": 2
+    },
+    "failure_ids": [
+      "holdout-config-02",
+      "holdout-config-04",
+      "holdout-unknown-03",
+      "holdout-unknown-04"
+    ]
+  },
+  "tool_calling_adapter": {
+    "model": "tool-calling",
+    "overall_classification_accuracy": 0.875,
+    "classification_accuracy_on_valid_outputs": 0.9333333333333333,
+    "raw_schema_validity_rate": 0.9375,
+    "provider_failure_rate": 0.0,
+    "per_class_correct": {
+      "authentication": 3,
+      "rate_limit": 4,
+      "timeout": 4,
+      "network": 4,
+      "data_mapping": 4,
+      "webhook": 4,
+      "configuration": 2,
+      "unknown": 3
+    },
+    "failure_ids": [
+      "holdout-auth-03",
+      "holdout-config-02",
+      "holdout-config-04",
+      "holdout-unknown-04"
+    ]
+  },
+  "interpretation": "Both models generalized to 87.5% overall accuracy on the unseen holdout and 93.75% raw schema validity with zero provider failures. Remaining failures are concentrated in configuration-vs-data_mapping classification and empty evidence arrays. Because this holdout has now been inspected, future prompt changes should be scored on a new untouched holdout before claiming additional improvement."
+}
