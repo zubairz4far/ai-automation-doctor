@@ -5,7 +5,6 @@ from pathlib import Path
 from app.models.schemas import ExecutionFailure, FailureClass
 from app.services.diagnoser import DiagnosisEngine
 
-
 ROOT = Path(__file__).resolve().parents[1]
 DATASET = ROOT / "evals" / "ai_diagnosis_holdout_v3.jsonl"
 
