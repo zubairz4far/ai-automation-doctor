@@ -147,6 +147,42 @@ def test_provider_receives_privacy_minimized_context_only():
     assert "workflow_snapshot" not in serialized
 
 
+def test_provider_normalizes_single_evidence_string():
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "message": {
+                            "content": json.dumps(
+                                {
+                                    "failure_class": "configuration",
+                                    "confidence": 0.76,
+                                    "root_cause": "Likely vendor-specific configuration issue.",
+                                    "evidence": "Unclassified vendor error",
+                                    "recommended_action": "Inspect the node configuration manually.",
+                                }
+                            )
+                        }
+                    }
+                ]
+            },
+        )
+
+    provider = OpenAICompatibleInsightProvider(
+        base_url="http://ai.local/v1",
+        model="test-model",
+        transport=httpx.MockTransport(handler),
+    )
+    engine = GuardedDiagnosisEngine(provider=provider, enabled=True)
+
+    result = engine.diagnose(unknown_failure())
+
+    assert result.ai_insight is not None
+    assert result.ai_insight.evidence == ["Unclassified vendor error"]
+
+
 def test_provider_output_cannot_smuggle_retry_or_patch_decisions():
     def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(
