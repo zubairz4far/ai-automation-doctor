@@ -1,0 +1,31 @@
+name: Check public demo URL
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/check-public-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check expected GitHub Pages URL
+        shell: bash
+        run: |
+          url="https://zubairz4far.github.io/ai-automation-doctor/"
+          status="$(curl -L --silent --show-error --output /tmp/public-demo.html --write-out '%{http_code}' "$url" || true)"
+          echo "PUBLIC_DEMO_URL=$url"
+          echo "HTTP_STATUS=$status"
+          if [ "$status" = "200" ]; then
+            grep -q "AI Automation Doctor" /tmp/public-demo.html
+            echo "PUBLIC_DEMO_REACHABLE=true"
+          else
+            echo "PUBLIC_DEMO_REACHABLE=false"
+            echo "::warning::GitHub Pages is not active yet; gh-pages branch exists but repository Pages source still needs activation."
+          fi
