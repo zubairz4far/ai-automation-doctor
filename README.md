@@ -1,18 +1,53 @@
 # AI Automation Doctor
 
+[![CI](https://github.com/zubairz4far/ai-automation-doctor/actions/workflows/ci.yml/badge.svg)](https://github.com/zubairz4far/ai-automation-doctor/actions/workflows/ci.yml)
+[![Container](https://img.shields.io/badge/GHCR-v1.3.0-2496ED?logo=docker&logoColor=white)](docs/deployment/container-image.md)
+[![Safety](https://img.shields.io/badge/public%20demo-read--only-2ea44f)](SECURITY.md)
+
 **v1.3.0** — a production-shaped reliability service for failed n8n automations with deterministic safety controls, bounded AI diagnosis, human-approved remediation, durable recovery, blind real-model evaluation, and a read-only interactive demo.
 
 AI Automation Doctor ingests failed n8n executions, produces a privacy-minimized incident, classifies likely failure cause and retry safety, proposes only narrowly allowlisted retry changes, validates them against the current workflow snapshot, binds human approval to that exact validated state, and can execute a guarded **apply → verify → retry → verify** flow.
 
 The LLM is advisory-only. It cannot decide retry safety, modify workflow JSON, approve a patch, or execute a retry.
 
+<p align="center">
+  <img src="docs/assets/demo/demo-showcase.gif" alt="AI Automation Doctor interactive read-only demo" width="920">
+</p>
+
+## Why this project is different
+
+A typical “AI fixes automations” demo gives the model an error and lets it suggest or execute a change. This project treats automation remediation as a **reliability, evaluation, and authority-boundary problem**:
+
+- deterministic logic remains authoritative for retry safety and mutation decisions
+- AI sees privacy-minimized context and can only return bounded advisory fields
+- workflow changes are constrained to a small retry-only allowlist
+- human approval is bound to an exact workflow version and SHA-256 snapshot
+- crash recovery, leases, idempotency, and replay semantics are explicit
+- model choice is backed by blind real-model evaluation rather than a fine-tuning claim
+
+For a concise recruiter/interview summary, see [`docs/portfolio-positioning.md`](docs/portfolio-positioning.md).
+
 ## Interactive demo
 
-Run the service and open:
+Run the published container in read-only public-demo mode:
+
+```bash
+docker pull ghcr.io/zubairz4far/ai-automation-doctor:v1.3.0
+docker run --rm -p 8000:8000 \
+  -e PUBLIC_DEMO_ONLY=true \
+  -e ALLOW_WORKFLOW_MUTATION=false \
+  -e ALLOW_EXECUTION_RETRY=false \
+  -e AI_DIAGNOSIS_ENABLED=false \
+  ghcr.io/zubairz4far/ai-automation-doctor:v1.3.0
+```
+
+Then open:
 
 ```text
 http://localhost:8000/demo
 ```
+
+A Render Blueprint is also committed as [`render.yaml`](render.yaml). The public deployment profile keeps mutation, retry, durable incident ingestion, and live AI calls disabled.
 
 The demo lets you choose sample failures or enter your own n8n error metadata and inspect:
 
@@ -23,6 +58,13 @@ The demo lets you choose sample failures or enter your own n8n error metadata an
 - an explicit safety panel showing that demo mutation, retry, approval, and durable writes are disabled
 
 `POST /v1/demo/analyze` is **read-only by construction**. It does not use the durable incident store and it has no path to approval, workflow mutation, or execution retry. A generated patch is only an in-memory preview.
+
+<table>
+<tr>
+<td width="50%"><img src="docs/assets/demo/demo-home.png" alt="Demo input screen"></td>
+<td width="50%"><img src="docs/assets/demo/demo-rate-limit.png" alt="Rate-limit diagnosis with patch preview"></td>
+</tr>
+</table>
 
 ## Measured result
 
@@ -54,7 +96,7 @@ Machine-readable evidence is committed under `evals/results/`, including `ai_dia
 - durable SQLite remediation state and append-only timeline
 - lease-based concurrency protection and idempotent replay
 - crash recovery that avoids repeating uncertain writes or retries
-- Docker packaging, readiness/health endpoints, metrics, and CI safety gates
+- Docker packaging, readiness/health endpoints, metrics, GHCR publishing, Playwright browser capture, and CI safety gates
 
 ## Architecture
 
@@ -227,6 +269,8 @@ AI_BASELINE_CONFIDENCE_THRESHOLD=0.80
 
 ## Docker
 
+Build locally:
+
 ```bash
 docker build -t ai-automation-doctor:1.3.0 .
 docker run --rm -p 8000:8000 \
@@ -235,7 +279,13 @@ docker run --rm -p 8000:8000 \
   ai-automation-doctor:1.3.0
 ```
 
-The SQLite path must live on persistent storage if restart recovery is required.
+Or use the CI-published image:
+
+```bash
+docker pull ghcr.io/zubairz4far/ai-automation-doctor:v1.3.0
+```
+
+The successful image publication is recorded in [`docs/deployment/container-image.md`](docs/deployment/container-image.md). The SQLite path must live on persistent storage if restart recovery is required.
 
 ## API flow
 
