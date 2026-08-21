@@ -1,0 +1,23 @@
+{
+  "dataset": "evals/ai_diagnosis_v1.jsonl",
+  "model": "Qwen/Qwen3-1.7B",
+  "cases": 32,
+  "baseline_accuracy": 0.125,
+  "baseline_unknown_rate": 1.0,
+  "classification_accuracy_on_normalized_valid_outputs": 0.3448275862068966,
+  "overall_classification_accuracy": 0.3125,
+  "raw_schema_validity_rate": 0.90625,
+  "normalized_schema_validity_rate": 0.90625,
+  "normalization_usage_rate": 0.0,
+  "provider_failure_rate": 0.0,
+  "per_class": {
+    "authentication": {"cases": 4, "correct": 2, "raw_valid": 4, "normalized_valid": 4},
+    "configuration": {"cases": 4, "correct": 0, "raw_valid": 4, "normalized_valid": 4},
+    "data_mapping": {"cases": 4, "correct": 1, "raw_valid": 4, "normalized_valid": 4},
+    "network": {"cases": 4, "correct": 2, "raw_valid": 4, "normalized_valid": 4},
+    "rate_limit": {"cases": 4, "correct": 1, "raw_valid": 3, "normalized_valid": 3},
+    "timeout": {"cases": 4, "correct": 0, "raw_valid": 3, "normalized_valid": 3},
+    "unknown": {"cases": 4, "correct": 4, "raw_valid": 4, "normalized_valid": 4},
+    "webhook": {"cases": 4, "correct": 0, "raw_valid": 3, "normalized_valid": 3}
+  }
+}
