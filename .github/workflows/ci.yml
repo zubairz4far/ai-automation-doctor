@@ -62,7 +62,7 @@ jobs:
   qwen3-real-benchmark:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -111,23 +111,25 @@ jobs:
           done
           cat /tmp/llama-server.log
           exit 1
-      - name: Probe three raw model outputs
+      - name: Run 32-case real-model benchmark
         run: |
-          python -m scripts.probe_ai_output \
+          python -m scripts.evaluate_ai_diagnosis \
             --api-base-url http://127.0.0.1:8000/v1 \
             --model Qwen/Qwen3-1.7B \
-            --limit 3 \
-            --output evals/results/qwen_raw_probe.json
-      - name: Print probe
+            --timeout-seconds 120 \
+            --output evals/results/ai_diagnosis_qwen3_1.7b_q4_k_m.json
+      - name: Print measured result
         if: always()
         run: |
-          cat evals/results/qwen_raw_probe.json 2>/dev/null || true
+          if [ -f evals/results/ai_diagnosis_qwen3_1.7b_q4_k_m.json ]; then
+            cat evals/results/ai_diagnosis_qwen3_1.7b_q4_k_m.json
+          fi
           tail -50 /tmp/llama-server.log 2>/dev/null || true
-      - name: Upload probe
+      - name: Upload benchmark result
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: qwen3-raw-probe
-          path: evals/results/qwen_raw_probe.json
+          name: qwen3-1.7b-real-benchmark
+          path: evals/results/ai_diagnosis_qwen3_1.7b_q4_k_m.json
           if-no-files-found: warn
           retention-days: 1
