@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.1.0 — 2026-08-21
+
+Bounded AI diagnosis release.
+
+- Added an opt-in OpenAI-compatible advisory diagnosis provider for low-confidence/unknown incidents.
+- Kept deterministic failure class, confidence, retry safety, patch planning, approval, and remediation authoritative.
+- Added strict AI output validation that rejects retry decisions, patch data, credentials, workflow JSON, and extra fields.
+- Added privacy-minimized provider context that excludes raw input snapshots, workflow snapshots, workflow names, node names, execution IDs, and workflow IDs.
+- Added fail-closed fallback to deterministic analysis on provider/network/runtime/validation failure.
+- Added regression tests for AI gating, privacy minimization, unsafe-output rejection, and deterministic fallback.
+- Kept AI diagnosis disabled by default and configurable through environment variables.
+
 ## 1.0.0 — 2026-08-17
 
 Portfolio-ready reliability release.
