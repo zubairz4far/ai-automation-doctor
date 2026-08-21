@@ -153,6 +153,12 @@ class OpenAICompatibleInsightProvider:
         parsed = json.loads(text[start : end + 1])
         if not isinstance(parsed, dict):
             raise TypeError("AI provider output must be a JSON object")
+
+        # Normalize the one benign shape mismatch repeatedly produced by small LLMs
+        # before strict validation. This keeps the contract strict for every other field.
+        if isinstance(parsed.get("evidence"), str):
+            parsed["evidence"] = [parsed["evidence"]]
+
         return parsed
 
 
