@@ -1,0 +1,63 @@
+{
+  "dataset": "evals/ai_diagnosis_v1.jsonl",
+  "experiment": "deanchored_taxonomy_prompt_v3",
+  "cases": 32,
+  "previous": {
+    "base": {
+      "overall_classification_accuracy": 0.3125,
+      "raw_schema_validity_rate": 0.90625
+    },
+    "tool_calling_adapter": {
+      "overall_classification_accuracy": 0.25,
+      "raw_schema_validity_rate": 0.8125
+    }
+  },
+  "deanchored": {
+    "base": {
+      "model": "Qwen/Qwen3-1.7B",
+      "overall_classification_accuracy": 0.8125,
+      "classification_accuracy_on_normalized_valid_outputs": 0.8125,
+      "raw_schema_validity_rate": 1.0,
+      "normalized_schema_validity_rate": 1.0,
+      "normalization_usage_rate": 0.0,
+      "provider_failure_rate": 0.0,
+      "per_class_correct": {
+        "authentication": 4,
+        "rate_limit": 4,
+        "timeout": 4,
+        "network": 4,
+        "data_mapping": 4,
+        "webhook": 3,
+        "configuration": 1,
+        "unknown": 2
+      }
+    },
+    "tool_calling_adapter": {
+      "model": "tool-calling",
+      "overall_classification_accuracy": 0.84375,
+      "classification_accuracy_on_normalized_valid_outputs": 0.84375,
+      "raw_schema_validity_rate": 1.0,
+      "normalized_schema_validity_rate": 1.0,
+      "normalization_usage_rate": 0.0,
+      "provider_failure_rate": 0.0,
+      "per_class_correct": {
+        "authentication": 4,
+        "rate_limit": 4,
+        "timeout": 4,
+        "network": 4,
+        "data_mapping": 4,
+        "webhook": 4,
+        "configuration": 1,
+        "unknown": 2
+      }
+    }
+  },
+  "deltas": {
+    "base_accuracy_pp": 50.0,
+    "adapter_accuracy_pp": 59.375,
+    "new_adapter_minus_base_accuracy_pp": 3.125,
+    "base_raw_schema_validity_pp": 9.375,
+    "adapter_raw_schema_validity_pp": 18.75
+  },
+  "interpretation": "Removing deterministic-baseline anchoring and adding explicit taxonomy semantics materially improved both models. The remaining development-set errors cluster around configuration-vs-data_mapping boundaries and opaque unknown-vs-network classification. Subsequent prompt changes should be evaluated on evals/ai_diagnosis_holdout_v2.jsonl rather than repeatedly optimizing the development set."
+}
