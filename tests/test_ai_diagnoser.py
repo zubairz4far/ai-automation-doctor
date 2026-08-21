@@ -144,6 +144,10 @@ def test_provider_receives_privacy_minimized_independent_context_only():
     schema = response_format["json_schema"]["schema"]
     assert schema["additionalProperties"] is False
     assert schema["properties"]["evidence"]["type"] == "array"
+    assert schema["properties"]["evidence"]["minItems"] == 1
+    assert schema["properties"]["evidence"]["maxItems"] == 8
+    assert "maxLength" not in schema["properties"]["root_cause"]
+    assert "maxLength" not in schema["properties"]["recommended_action"]
 
     user_context = json.loads(captured["messages"][1]["content"])
     serialized = json.dumps(user_context)
