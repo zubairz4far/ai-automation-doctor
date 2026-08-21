@@ -18,9 +18,22 @@ app = FastAPI(
     ),
 )
 
+PUBLIC_DEMO_PATHS = {
+    "/demo",
+    "/v1/demo/analyze",
+    "/health",
+    "/ready",
+}
+
 
 @app.middleware("http")
-async def protect_side_effect_endpoints(request: Request, call_next):
+async def enforce_runtime_boundaries(request: Request, call_next):
+    if settings.public_demo_only and request.url.path not in PUBLIC_DEMO_PATHS:
+        return JSONResponse(
+            status_code=404,
+            content={"detail": "This deployment exposes only the read-only public demo."},
+        )
+
     sensitive = request.method == "POST" and request.url.path.endswith(("/approve", "/apply-retry"))
     side_effects_enabled = settings.allow_workflow_mutation or settings.allow_execution_retry
     if sensitive and side_effects_enabled:
