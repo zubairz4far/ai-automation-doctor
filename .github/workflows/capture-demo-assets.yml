@@ -8,6 +8,13 @@ on:
       - "app/main.py"
       - "scripts/capture_demo_assets.py"
       - ".github/workflows/capture-demo-assets.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "app/demo.py"
+      - "app/main.py"
+      - "scripts/capture_demo_assets.py"
+      - ".github/workflows/capture-demo-assets.yml"
   workflow_dispatch:
 
 permissions:
@@ -53,7 +60,16 @@ jobs:
       - name: Capture screenshots and GIF
         run: python scripts/capture_demo_assets.py
 
+      - name: Upload preview artifact
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-assets-preview
+          path: docs/assets/demo
+          if-no-files-found: error
+
       - name: Commit generated assets
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
