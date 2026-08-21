@@ -3,6 +3,7 @@
 [![CI](https://github.com/zubairz4far/ai-automation-doctor/actions/workflows/ci.yml/badge.svg)](https://github.com/zubairz4far/ai-automation-doctor/actions/workflows/ci.yml)
 [![Container](https://img.shields.io/badge/GHCR-v1.3.0-2496ED?logo=docker&logoColor=white)](docs/deployment/container-image.md)
 [![Safety](https://img.shields.io/badge/public%20demo-read--only-2ea44f)](SECURITY.md)
+[![Live Demo](https://img.shields.io/badge/live%20demo-open-7c3aed)](https://zubairz4far.github.io/ai-automation-doctor/)
 
 **v1.3.0** — a production-shaped reliability service for failed n8n automations with deterministic safety controls, bounded AI diagnosis, human-approved remediation, durable recovery, blind real-model evaluation, and a read-only interactive demo.
 
@@ -28,6 +29,8 @@ A typical “AI fixes automations” demo gives the model an error and lets it s
 For a concise recruiter/interview summary, see [`docs/portfolio-positioning.md`](docs/portfolio-positioning.md).
 
 ## Interactive demo
+
+**Live public demo:** [https://zubairz4far.github.io/ai-automation-doctor/](https://zubairz4far.github.io/ai-automation-doctor/) — browser-only, read-only, and verified from GitHub Actions.
 
 Run the published container in read-only public-demo mode:
 

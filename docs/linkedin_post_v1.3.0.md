@@ -39,6 +39,7 @@ v1.3.0 now includes:
 - automated safety benchmarks and Docker CI
 - public-demo-only runtime mode for safe portfolio deployment
 
+Live demo: https://zubairz4far.github.io/ai-automation-doctor/
 Repository: https://github.com/zubairz4far/ai-automation-doctor
 
 The main lesson from this build: **before training another model, measure whether your context, control boundaries, and evaluation design are the actual problem.**
