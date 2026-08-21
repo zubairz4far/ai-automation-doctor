@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.2.1 — 2026-08-21
+
+Evaluation-hardening release.
+
+- Removed deterministic-baseline wording from the LLM context after measured evidence showed that it anchored small models to the baseline `unknown` class, confidence, and wording.
+- Added explicit diagnosis taxonomy semantics and boundary guidance while keeping the AI advisory outside the control path for retry safety, patch planning, approval, and remediation.
+- Added strict prompt guidance requiring one to eight non-empty evidence strings and preserving fail-closed schema validation.
+- Added two balanced 32-case holdout sets with deterministic-abstention integrity tests so prompt changes are not repeatedly scored only on the development set.
+- Recorded a first unseen holdout result of **87.5% overall accuracy** for both Qwen3-1.7B and the existing tool-calling adapter, with **93.75% raw schema validity** and **0% provider failures**.
+- Recorded a second blind holdout result of **93.75% overall accuracy** for base Qwen3-1.7B versus **84.375%** for the tool-calling adapter, with **100% raw schema validity** and **0% provider failures** for both.
+- Selected base `Qwen/Qwen3-1.7B` as the recommended diagnosis model. The tool-calling QLoRA remains a comparison target because its training objective does not consistently transfer to incident classification.
+- Added machine-readable v1.2.1 benchmark evidence under `evals/results/`.
+
 ## 1.2.0 — 2026-08-21
 
 Real-model diagnosis evaluation release.
