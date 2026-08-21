@@ -79,4 +79,5 @@ jobs:
             exit 0
           fi
           git commit -m "Refresh interactive demo screenshots"
-          git push
+          git pull --rebase origin main
+          git push origin HEAD:main
