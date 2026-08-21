@@ -1,0 +1,36 @@
+{
+  "release": "1.2.1",
+  "date": "2026-08-21",
+  "model_recommendation": "Qwen/Qwen3-1.7B",
+  "safety_contract": "AI diagnosis remains advisory-only; deterministic diagnosis remains authoritative for retry safety, patch planning, approval, and remediation.",
+  "development_set": {
+    "dataset": "evals/ai_diagnosis_v1.jsonl",
+    "cases": 32,
+    "base_accuracy": 0.8125,
+    "adapter_accuracy": 0.84375,
+    "base_raw_schema_validity": 1.0,
+    "adapter_raw_schema_validity": 1.0
+  },
+  "holdout_1": {
+    "dataset": "evals/ai_diagnosis_holdout_v2.jsonl",
+    "cases": 32,
+    "base_accuracy": 0.875,
+    "adapter_accuracy": 0.875,
+    "base_raw_schema_validity": 0.9375,
+    "adapter_raw_schema_validity": 0.9375,
+    "base_provider_failure_rate": 0.0,
+    "adapter_provider_failure_rate": 0.0
+  },
+  "holdout_2_blind": {
+    "dataset": "evals/ai_diagnosis_holdout_v3.jsonl",
+    "cases": 32,
+    "base_accuracy": 0.9375,
+    "adapter_accuracy": 0.84375,
+    "base_raw_schema_validity": 1.0,
+    "adapter_raw_schema_validity": 1.0,
+    "base_provider_failure_rate": 0.0,
+    "adapter_provider_failure_rate": 0.0,
+    "adapter_minus_base_accuracy_pp": -9.375
+  },
+  "interpretation": "Prompt/context architecture, especially removing deterministic-baseline anchoring and defining explicit taxonomy boundaries, produced the dominant gain. The tool-calling QLoRA does not consistently transfer to incident diagnosis and is not the recommended diagnosis model."
+}
