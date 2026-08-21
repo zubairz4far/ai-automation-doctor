@@ -95,7 +95,7 @@ class OpenAICompatibleInsightProvider:
                 "json_schema": {
                     "name": "ai_automation_doctor_diagnosis",
                     "strict": True,
-                    "schema": AIInsightPayload.model_json_schema(),
+                    "schema": self._generation_schema(),
                 },
             },
             "messages": [
@@ -108,6 +108,46 @@ class OpenAICompatibleInsightProvider:
                     "content": json.dumps(self._privacy_minimized_context(failure, baseline)),
                 },
             ],
+        }
+
+    @staticmethod
+    def _generation_schema() -> dict[str, object]:
+        """Portable generation constraint; Pydantic remains the final validator.
+
+        Some OpenAI-compatible runtimes translate JSON Schema to a grammar and cannot
+        compile every validation keyword emitted by Pydantic (notably long string length
+        bounds). Keep generation constraints structurally strict and re-apply all length,
+        range, and extra-field requirements with AIInsightPayload after generation.
+        """
+        return {
+            "type": "object",
+            "additionalProperties": False,
+            "required": [
+                "failure_class",
+                "confidence",
+                "root_cause",
+                "evidence",
+                "recommended_action",
+            ],
+            "properties": {
+                "failure_class": {
+                    "type": "string",
+                    "enum": [item.value for item in FailureClass],
+                },
+                "confidence": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1,
+                },
+                "root_cause": {"type": "string"},
+                "evidence": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 8,
+                    "items": {"type": "string"},
+                },
+                "recommended_action": {"type": "string"},
+            },
         }
 
     @staticmethod
