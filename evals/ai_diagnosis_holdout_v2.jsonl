@@ -1,0 +1,32 @@
+{"id":"holdout-auth-01","expected_class":"authentication","node_type":"n8n-nodes-base.httpRequest","error_message":"Signer key fingerprint is not recognized by the service account policy."}
+{"id":"holdout-auth-02","expected_class":"authentication","node_type":"n8n-nodes-base.httpRequest","error_message":"The caller principal is outside the allowed scope for this object."}
+{"id":"holdout-auth-03","expected_class":"authentication","node_type":"n8n-nodes-base.httpRequest","error_message":"Request MAC does not correspond to the identity registered for this client."}
+{"id":"holdout-auth-04","expected_class":"authentication","node_type":"n8n-nodes-base.httpRequest","error_message":"This tenant no longer accepts the subject presented by the client."}
+{"id":"holdout-rate-01","expected_class":"rate_limit","node_type":"n8n-nodes-base.httpRequest","error_message":"All request slots for the current billing interval are occupied; new calls are deferred."}
+{"id":"holdout-rate-02","expected_class":"rate_limit","node_type":"n8n-nodes-base.httpRequest","error_message":"The service has consumed its per-minute allowance for this tenant."}
+{"id":"holdout-rate-03","expected_class":"rate_limit","node_type":"n8n-nodes-base.httpRequest","error_message":"Parallel request capacity is fully occupied; new work is being rejected until slots free."}
+{"id":"holdout-rate-04","expected_class":"rate_limit","node_type":"n8n-nodes-base.httpRequest","error_message":"Provider budget counter has reached its ceiling for the current interval."}
+{"id":"holdout-timeout-01","expected_class":"timeout","node_type":"n8n-nodes-base.httpRequest","error_message":"The gateway ended the exchange after 45 seconds without upstream completion."}
+{"id":"holdout-timeout-02","expected_class":"timeout","node_type":"n8n-nodes-base.httpRequest","error_message":"Connector waited past its response deadline without receiving headers."}
+{"id":"holdout-timeout-03","expected_class":"timeout","node_type":"n8n-nodes-base.httpRequest","error_message":"Operation exceeded the permitted latency window and was abandoned."}
+{"id":"holdout-timeout-04","expected_class":"timeout","node_type":"n8n-nodes-base.httpRequest","error_message":"Remote call remained pending beyond the maximum service duration."}
+{"id":"holdout-network-01","expected_class":"network","node_type":"n8n-nodes-base.httpRequest","error_message":"TLS negotiation ended before a secure session could be established."}
+{"id":"holdout-network-02","expected_class":"network","node_type":"n8n-nodes-base.httpRequest","error_message":"TCP session could not be established with the target host."}
+{"id":"holdout-network-03","expected_class":"network","node_type":"n8n-nodes-base.httpRequest","error_message":"Peer closed the socket during the transport handshake."}
+{"id":"holdout-network-04","expected_class":"network","node_type":"n8n-nodes-base.httpRequest","error_message":"Hostname lookup returned no usable address from the resolver."}
+{"id":"holdout-mapping-01","expected_class":"data_mapping","node_type":"n8n-nodes-base.set","error_message":"Selector customer.id resolved to null while the next step expects a scalar identifier."}
+{"id":"holdout-mapping-02","expected_class":"data_mapping","node_type":"n8n-nodes-base.set","error_message":"Incoming item contains an object at amount, but the target field accepts a numeric scalar."}
+{"id":"holdout-mapping-03","expected_class":"data_mapping","node_type":"n8n-nodes-base.set","error_message":"The iterator requested record 8 from a batch containing only 5 records."}
+{"id":"holdout-mapping-04","expected_class":"data_mapping","node_type":"n8n-nodes-base.set","error_message":"Mapping template references profile.email, but this item has no profile member."}
+{"id":"holdout-webhook-01","expected_class":"webhook","node_type":"n8n-nodes-base.httpRequest","error_message":"Callback arrived at a path that has no active listener in the deployed automation."}
+{"id":"holdout-webhook-02","expected_class":"webhook","node_type":"n8n-nodes-base.httpRequest","error_message":"The callback URL points to an endpoint that is not mounted in live mode."}
+{"id":"holdout-webhook-03","expected_class":"webhook","node_type":"n8n-nodes-base.httpRequest","error_message":"External event delivery reached a route not exposed by the active workflow."}
+{"id":"holdout-webhook-04","expected_class":"webhook","node_type":"n8n-nodes-base.httpRequest","error_message":"The listening endpoint for production callbacks is absent from the deployed revision."}
+{"id":"holdout-config-01","expected_class":"configuration","node_type":"n8n-nodes-base.httpRequest","error_message":"The chosen connector action does not support the selected execution mode."}
+{"id":"holdout-config-02","expected_class":"configuration","node_type":"n8n-nodes-base.httpRequest","error_message":"The request payload format is incompatible with the contract declared by the selected action."}
+{"id":"holdout-config-03","expected_class":"configuration","node_type":"n8n-nodes-base.httpRequest","error_message":"The resource identifier syntax is not accepted for the operation configured on this node."}
+{"id":"holdout-config-04","expected_class":"configuration","node_type":"n8n-nodes-base.httpRequest","error_message":"The node is set for binary transfer while the upstream step emits JSON documents."}
+{"id":"holdout-unknown-01","expected_class":"unknown","node_type":"n8n-nodes-base.httpRequest","error_message":"Provider returned condition KAPPA_42 without documentation or diagnostic context."}
+{"id":"holdout-unknown-02","expected_class":"unknown","node_type":"n8n-nodes-base.httpRequest","error_message":"Remote processor stopped under opaque state M7 and supplied no explanation."}
+{"id":"holdout-unknown-03","expected_class":"unknown","node_type":"n8n-nodes-base.httpRequest","error_message":"Execution ended after an undocumented internal transition labeled ORBIT_3."}
+{"id":"holdout-unknown-04","expected_class":"unknown","node_type":"n8n-nodes-base.httpRequest","error_message":"Service rejected the operation under an unspecified internal policy branch."}
