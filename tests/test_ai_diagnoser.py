@@ -137,6 +137,7 @@ def test_provider_receives_privacy_minimized_context_without_baseline_anchoring(
     result = engine.diagnose(unknown_failure())
 
     assert result.ai_insight is not None
+    system_prompt = captured["messages"][0]["content"]
     user_context = json.loads(captured["messages"][1]["content"])
     serialized = json.dumps(user_context)
     assert "private@example.com" not in serialized
@@ -154,6 +155,9 @@ def test_provider_receives_privacy_minimized_context_without_baseline_anchoring(
         "error_code",
         "status_code",
     }
+    assert "configuration takes precedence over data_mapping" in system_prompt
+    assert "Never return an empty evidence array" in system_prompt
+    assert "Opaque vendor/internal/policy codes" in system_prompt
 
 
 def test_provider_normalizes_single_evidence_string():
