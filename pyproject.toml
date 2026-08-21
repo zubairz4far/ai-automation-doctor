@@ -1,7 +1,7 @@
 [project]
 name = "ai-automation-doctor"
-version = "1.2.1"
-description = "Durable n8n automation reliability service with evaluated deterministic diagnosis, bounded AI advisory analysis, blind real-model diagnosis benchmarks, constrained human-approved remediation, idempotency, and crash-safe recovery."
+version = "1.3.0"
+description = "Durable n8n automation reliability service with evaluated deterministic diagnosis, bounded AI advisory analysis, blind real-model diagnosis benchmarks, a read-only interactive demo, constrained human-approved remediation, idempotency, and crash-safe recovery."
 requires-python = ">=3.11,<3.12"
 dependencies = [
   "fastapi==0.141.1",
