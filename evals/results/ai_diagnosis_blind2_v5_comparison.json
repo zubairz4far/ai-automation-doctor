@@ -1,0 +1,22 @@
+{
+  "dataset": "evals/ai_diagnosis_holdout_v3.jsonl",
+  "experiment": "second_blind_prompt_v5",
+  "cases": 32,
+  "previous_holdout": {
+    "base_accuracy": 0.875,
+    "adapter_accuracy": 0.875,
+    "base_raw_schema_validity": 0.9375,
+    "adapter_raw_schema_validity": 0.9375
+  },
+  "base": {
+    "blind2_accuracy": 0.9375,
+    "blind2_raw_schema_validity": 1.0,
+    "blind2_provider_failure_rate": 0.0
+  },
+  "adapter": {
+    "blind2_accuracy": 0.84375,
+    "blind2_raw_schema_validity": 1.0,
+    "blind2_provider_failure_rate": 0.0
+  },
+  "blind2_adapter_minus_base_accuracy_pp": -9.375
+}
