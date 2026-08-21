@@ -164,7 +164,9 @@ class GuardedDiagnosisEngine:
 
         try:
             insight = self.provider.analyze(failure, diagnosis) if self.provider else None
-        except (httpx.HTTPError, KeyError, TypeError, ValueError, json.JSONDecodeError):
+        except Exception:
+            # The deterministic result is always safe to return. The advisory layer is
+            # explicitly non-critical and must never make incident analysis unavailable.
             return diagnosis
 
         if insight is None:
