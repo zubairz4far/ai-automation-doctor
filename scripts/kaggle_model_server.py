@@ -4,7 +4,7 @@ import os
 import threading
 import time
 import uuid
-from contextlib import nullcontext
+from contextlib import asynccontextmanager, nullcontext
 from typing import Any
 
 import torch
@@ -20,7 +20,6 @@ HOST = os.getenv("HOST", "127.0.0.1")
 PORT = int(os.getenv("PORT", "8000"))
 MAX_NEW_TOKENS = int(os.getenv("MAX_NEW_TOKENS", "320"))
 
-app = FastAPI(title="Kaggle local OpenAI-compatible Qwen server")
 _lock = threading.Lock()
 _tokenizer: Any = None
 _model: Any = None
@@ -44,7 +43,7 @@ def _load() -> None:
     base = AutoModelForCausalLM.from_pretrained(
         BASE_MODEL,
         torch_dtype=torch.float16,
-        device_map="cuda",
+        device_map={"": 0},
         low_cpu_mem_usage=True,
         trust_remote_code=True,
     )
@@ -56,6 +55,18 @@ def _load() -> None:
         is_trainable=False,
     )
     _model.eval()
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    _load()
+    yield
+
+
+app = FastAPI(
+    title="Kaggle local OpenAI-compatible Qwen server",
+    lifespan=lifespan,
+)
 
 
 def _render_prompt(messages: list[dict[str, Any]]) -> str:
@@ -74,7 +85,6 @@ def _render_prompt(messages: list[dict[str, Any]]) -> str:
 
 
 def _generate(model_name: str, messages: list[dict[str, Any]], max_tokens: int | None) -> str:
-    _load()
     prompt = _render_prompt(messages)
     inputs = _tokenizer(prompt, return_tensors="pt").to("cuda")
     input_tokens = int(inputs["input_ids"].shape[-1])
@@ -107,7 +117,7 @@ def _generate(model_name: str, messages: list[dict[str, Any]], max_tokens: int |
 @app.get("/health")
 def health() -> dict[str, Any]:
     return {
-        "ok": True,
+        "ok": _model is not None,
         "cuda": torch.cuda.is_available(),
         "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
         "base_model": BASE_MODEL,
