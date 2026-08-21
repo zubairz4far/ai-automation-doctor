@@ -5,14 +5,16 @@ from fastapi.responses import JSONResponse
 
 from app.api.routes import router
 from app.core.config import get_settings
+from app.demo import router as demo_router
 
 settings = get_settings()
 app = FastAPI(
     title=settings.app_name,
-    version="1.0.0",
+    version="1.3.0",
     description=(
         "Durable n8n automation reliability service with privacy-minimized diagnosis, "
-        "constrained human-approved remediation, idempotency, and crash-safe recovery."
+        "bounded AI advisory analysis, constrained human-approved remediation, "
+        "idempotency, crash-safe recovery, and a read-only interactive demo."
     ),
 )
 
@@ -37,3 +39,4 @@ async def protect_side_effect_endpoints(request: Request, call_next):
 
 
 app.include_router(router)
+app.include_router(demo_router)
