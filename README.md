@@ -1,10 +1,28 @@
 # AI Automation Doctor
 
-**v1.2.1** — a production-shaped reliability service for failed n8n automations with deterministic safety controls, bounded AI diagnosis, human-approved remediation, durable recovery, and measured blind real-model evaluation.
+**v1.3.0** — a production-shaped reliability service for failed n8n automations with deterministic safety controls, bounded AI diagnosis, human-approved remediation, durable recovery, blind real-model evaluation, and a read-only interactive demo.
 
 AI Automation Doctor ingests failed n8n executions, produces a privacy-minimized incident, classifies likely failure cause and retry safety, proposes only narrowly allowlisted retry changes, validates them against the current workflow snapshot, binds human approval to that exact validated state, and can execute a guarded **apply → verify → retry → verify** flow.
 
 The LLM is advisory-only. It cannot decide retry safety, modify workflow JSON, approve a patch, or execute a retry.
+
+## Interactive demo
+
+Run the service and open:
+
+```text
+http://localhost:8000/demo
+```
+
+The demo lets you choose sample failures or enter your own n8n error metadata and inspect:
+
+- deterministic failure class, confidence, evidence, and retry-safety decision
+- optional AI advisory diagnosis when an OpenAI-compatible provider is configured
+- the bounded retry-patch preview produced from deterministic fields
+- the model-selection benchmark evidence used by the project
+- an explicit safety panel showing that demo mutation, retry, approval, and durable writes are disabled
+
+`POST /v1/demo/analyze` is **read-only by construction**. It does not use the durable incident store and it has no path to approval, workflow mutation, or execution retry. A generated patch is only an in-memory preview.
 
 ## Measured result
 
@@ -17,7 +35,7 @@ The latest second-blind 32-case diagnosis holdout produced:
 
 A prior unseen 32-case holdout produced **87.5% accuracy for both models** with **93.75% raw schema validity** and **0% provider failures**.
 
-The base model is therefore the recommended diagnosis model for v1.2.1. The existing tool-calling adapter remains a useful comparison target, but its fine-tuning objective does not consistently transfer to incident diagnosis.
+The base model is therefore the recommended diagnosis model for v1.3.0. The existing tool-calling adapter remains a useful comparison target, but its fine-tuning objective does not consistently transfer to incident diagnosis.
 
 Machine-readable evidence is committed under `evals/results/`, including `ai_diagnosis_release_summary_v1.2.1.json`.
 
@@ -29,6 +47,7 @@ Machine-readable evidence is committed under `evals/results/`, including `ai_dia
 - blind real-model evaluation with balanced development and holdout sets
 - privacy-minimized provider context with no deterministic-answer anchoring
 - strict structured-output validation and fail-closed fallback
+- read-only interactive product demo separated from the durable mutation path
 - workflow-aware structural validation rather than free-form JSON editing
 - human approval bound to `versionId` + SHA-256 snapshot evidence
 - deny-by-default mutation policy
@@ -100,6 +119,8 @@ deterministic diagnosis + retry-safety classifier
                            persist timeline + idempotent result
 ```
 
+The `/demo` path branches before durable incident storage: it runs diagnosis plus patch planning in memory and returns a preview only.
+
 ## AI advisory boundary
 
 The AI path exists only to improve operator context for failures that the deterministic taxonomy cannot classify confidently.
@@ -162,6 +183,7 @@ Additional controls:
 - retry starts only after exact persistence and protected-structure verification
 - raw input/workflow snapshots are never persisted to SQLite
 - completed remediation requests replay their persisted result without another write or retry
+- `/v1/demo/analyze` cannot write durable state, approve, mutate, or retry
 
 See [`SECURITY.md`](SECURITY.md) for deployment guidance and recovery semantics.
 
@@ -180,6 +202,8 @@ cp .env.example .env
 pip install -e ".[dev]"
 uvicorn app.main:app --reload
 ```
+
+Then open `http://localhost:8000/demo` for the read-only UI.
 
 Default configuration keeps side effects and AI calls off:
 
@@ -204,16 +228,25 @@ AI_BASELINE_CONFIDENCE_THRESHOLD=0.80
 ## Docker
 
 ```bash
-docker build -t ai-automation-doctor:1.2.1 .
+docker build -t ai-automation-doctor:1.3.0 .
 docker run --rm -p 8000:8000 \
   -v doctor-data:/app/data \
   --env-file .env \
-  ai-automation-doctor:1.2.1
+  ai-automation-doctor:1.3.0
 ```
 
 The SQLite path must live on persistent storage if restart recovery is required.
 
 ## API flow
+
+Read-only interactive demo:
+
+```bash
+curl http://localhost:8000/demo
+curl -X POST http://localhost:8000/v1/demo/analyze \
+  -H 'content-type: application/json' \
+  -d '{"error_message":"429 Too Many Requests","status_code":429}'
+```
 
 Analyze a failed n8n execution:
 
@@ -277,6 +310,7 @@ Live model inference is intentionally not a CI dependency: pull requests require
 - If crash recovery cannot prove whether an execution retry started, it stops for manual reconciliation.
 - Built-in operator authentication is a shared-secret baseline; stronger deployments should sit behind mTLS/OIDC/workload identity or another trusted gateway.
 - The AI benchmark sets are synthetic and hand-labeled. They measure controlled regression behavior, not production incident prevalence or universal model correctness.
+- The interactive demo does not persist incidents and intentionally cannot demonstrate live workflow mutation or retry.
 - No LLM is allowed to directly mutate workflow JSON.
 
 ## Release history
