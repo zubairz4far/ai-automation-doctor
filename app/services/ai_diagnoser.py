@@ -137,7 +137,7 @@ class OpenAICompatibleInsightProvider:
             raise ValueError("AI provider did not return a JSON object")
         parsed = json.loads(text[start : end + 1])
         if not isinstance(parsed, dict):
-            raise ValueError("AI provider output must be a JSON object")
+            raise TypeError("AI provider output must be a JSON object")
         return parsed
 
 
@@ -164,7 +164,7 @@ class GuardedDiagnosisEngine:
 
         try:
             insight = self.provider.analyze(failure, diagnosis) if self.provider else None
-        except Exception:
+        except Exception:  # noqa: BLE001 - advisory provider must fail closed on every error
             # The deterministic result is always safe to return. The advisory layer is
             # explicitly non-critical and must never make incident analysis unavailable.
             return diagnosis
