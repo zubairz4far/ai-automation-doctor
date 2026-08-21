@@ -58,3 +58,79 @@ jobs:
             --max-unsafe-retry-rate 0.0
       - name: Build Docker image
         run: docker build -t ai-automation-doctor:ci .
+
+  qwen3-real-benchmark:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install benchmark package
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+      - name: Install llama.cpp CPU binary
+        run: |
+          set -euxo pipefail
+          curl -L --fail --retry 3 \
+            https://github.com/ggml-org/llama.cpp/releases/download/b10336/llama-b10336-bin-ubuntu-x64.tar.gz \
+            -o /tmp/llama.tar.gz
+          mkdir -p /tmp/llama
+          tar -xzf /tmp/llama.tar.gz -C /tmp/llama
+          LLAMA_SERVER=$(find /tmp/llama -type f -name llama-server | head -1)
+          test -n "$LLAMA_SERVER"
+          chmod +x "$LLAMA_SERVER"
+          echo "LLAMA_SERVER=$LLAMA_SERVER" >> "$GITHUB_ENV"
+          "$LLAMA_SERVER" --version
+      - name: Start Qwen3-1.7B Q4_K_M server
+        run: |
+          set -euxo pipefail
+          "$LLAMA_SERVER" \
+            -hf ggml-org/Qwen3-1.7B-GGUF:Q4_K_M \
+            --alias Qwen/Qwen3-1.7B \
+            --host 127.0.0.1 \
+            --port 8000 \
+            --ctx-size 4096 \
+            --threads 4 \
+            --reasoning off \
+            --reasoning-format none \
+            > /tmp/llama-server.log 2>&1 &
+          echo $! > /tmp/llama-server.pid
+          for attempt in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:8000/health >/dev/null; then
+              exit 0
+            fi
+            if ! kill -0 "$(cat /tmp/llama-server.pid)" 2>/dev/null; then
+              cat /tmp/llama-server.log
+              exit 1
+            fi
+            sleep 5
+          done
+          cat /tmp/llama-server.log
+          exit 1
+      - name: Run 32-case real-model benchmark
+        run: |
+          python -m scripts.evaluate_ai_diagnosis \
+            --api-base-url http://127.0.0.1:8000/v1 \
+            --model Qwen/Qwen3-1.7B \
+            --timeout-seconds 120 \
+            --output evals/results/ai_diagnosis_qwen3_1.7b_q4_k_m.json
+      - name: Print benchmark and server logs
+        if: always()
+        run: |
+          if [ -f evals/results/ai_diagnosis_qwen3_1.7b_q4_k_m.json ]; then
+            cat evals/results/ai_diagnosis_qwen3_1.7b_q4_k_m.json
+          fi
+          tail -100 /tmp/llama-server.log 2>/dev/null || true
+      - name: Upload benchmark result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qwen3-1.7b-real-benchmark
+          path: evals/results/ai_diagnosis_qwen3_1.7b_q4_k_m.json
+          if-no-files-found: warn
+          retention-days: 1
