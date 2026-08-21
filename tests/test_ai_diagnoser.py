@@ -101,7 +101,7 @@ def test_provider_failure_falls_back_to_deterministic_result():
     assert provider.calls == 1
 
 
-def test_provider_receives_privacy_minimized_context_only():
+def test_provider_receives_privacy_minimized_independent_context_only():
     captured = {}
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -137,6 +137,7 @@ def test_provider_receives_privacy_minimized_context_only():
     result = engine.diagnose(unknown_failure())
 
     assert result.ai_insight is not None
+    assert captured["max_tokens"] == 256
     user_context = json.loads(captured["messages"][1]["content"])
     serialized = json.dumps(user_context)
     assert "private@example.com" not in serialized
@@ -145,6 +146,21 @@ def test_provider_receives_privacy_minimized_context_only():
     assert "Customer Secret Node" not in serialized
     assert "input_snapshot" not in serialized
     assert "workflow_snapshot" not in serialized
+    assert "deterministic_baseline" not in serialized
+    assert "retry_safe" not in serialized
+    assert "The failure does not match the deterministic baseline taxonomy" not in serialized
+
+
+def test_provider_prompt_requires_evidence_array_and_independent_classification():
+    provider = OpenAICompatibleInsightProvider(
+        base_url="http://ai.local/v1",
+        model="test-model",
+    )
+    prompt = provider._system_prompt()
+
+    assert "evidence MUST be a JSON array" in prompt
+    assert "independent" in prompt
+    assert "Use unknown only when" in prompt
 
 
 def test_provider_output_cannot_smuggle_retry_or_patch_decisions():
