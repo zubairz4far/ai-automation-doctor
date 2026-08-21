@@ -1,0 +1,86 @@
+name: Sync public demo link
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - ".github/workflows/sync-public-demo-link.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify live public demo
+        run: |
+          url="https://zubairz4far.github.io/ai-automation-doctor/"
+          for attempt in {1..12}; do
+            status="$(curl -L --silent --show-error --output /tmp/public-demo.html --write-out '%{http_code}' "$url" || true)"
+            if [ "$status" = "200" ] && grep -q "AI Automation Doctor" /tmp/public-demo.html; then
+              echo "Verified $url"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Public demo did not verify successfully."
+          exit 1
+
+      - name: Add live URL to portfolio docs
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          url = "https://zubairz4far.github.io/ai-automation-doctor/"
+          readme = Path("README.md")
+          text = readme.read_text()
+
+          badge = f"[![Live Demo](https://img.shields.io/badge/live%20demo-open-7c3aed)]({url})"
+          safety = "[![Safety](https://img.shields.io/badge/public%20demo-read--only-2ea44f)](SECURITY.md)"
+          if badge not in text:
+              text = text.replace(safety, safety + "\n" + badge, 1)
+
+          marker = "## Interactive demo\n\n"
+          live_line = f"**Live public demo:** [{url}]({url}) — browser-only, read-only, and verified from GitHub Actions.\n\n"
+          if live_line not in text:
+              text = text.replace(marker, marker + live_line, 1)
+          readme.write_text(text)
+
+          post = Path("docs/linkedin_post_v1.3.0.md")
+          post_text = post.read_text()
+          repo_line = "Repository: https://github.com/zubairz4far/ai-automation-doctor"
+          demo_line = f"Live demo: {url}"
+          if demo_line not in post_text:
+              post_text = post_text.replace(repo_line, demo_line + "\n" + repo_line, 1)
+          post.write_text(post_text)
+
+          receipt = Path("docs/deployment/public-demo.md")
+          receipt.write_text(
+              "# Public demo deployment\n\n"
+              f"Live URL: {url}\n\n"
+              "Hosting: GitHub Pages from the `gh-pages` branch.\n\n"
+              "Mode: browser-only static mirror of deterministic diagnosis and bounded retry-patch planning. "
+              "No backend, n8n, model-provider, mutation, approval, durable-write, or retry capability is exposed.\n"
+          )
+          PY
+
+      - name: Commit verified live URL
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md docs/linkedin_post_v1.3.0.md docs/deployment/public-demo.md
+          if git diff --cached --quiet; then
+            echo "Live demo links are already current."
+            exit 0
+          fi
+          git commit -m "Record live public demo URL"
+          git pull --rebase origin main
+          git push origin HEAD:main
