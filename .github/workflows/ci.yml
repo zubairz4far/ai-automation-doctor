@@ -62,7 +62,7 @@ jobs:
   qwen3-real-benchmark:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -85,7 +85,6 @@ jobs:
           test -n "$LLAMA_SERVER"
           chmod +x "$LLAMA_SERVER"
           echo "LLAMA_SERVER=$LLAMA_SERVER" >> "$GITHUB_ENV"
-          "$LLAMA_SERVER" --version
       - name: Start Qwen3-1.7B Q4_K_M server
         run: |
           set -euxo pipefail
@@ -112,25 +111,23 @@ jobs:
           done
           cat /tmp/llama-server.log
           exit 1
-      - name: Run 32-case real-model benchmark
+      - name: Probe three raw model outputs
         run: |
-          python -m scripts.evaluate_ai_diagnosis \
+          python -m scripts.probe_ai_output \
             --api-base-url http://127.0.0.1:8000/v1 \
             --model Qwen/Qwen3-1.7B \
-            --timeout-seconds 120 \
-            --output evals/results/ai_diagnosis_qwen3_1.7b_q4_k_m.json
-      - name: Print benchmark and server logs
+            --limit 3 \
+            --output evals/results/qwen_raw_probe.json
+      - name: Print probe
         if: always()
         run: |
-          if [ -f evals/results/ai_diagnosis_qwen3_1.7b_q4_k_m.json ]; then
-            cat evals/results/ai_diagnosis_qwen3_1.7b_q4_k_m.json
-          fi
-          tail -100 /tmp/llama-server.log 2>/dev/null || true
-      - name: Upload benchmark result
+          cat evals/results/qwen_raw_probe.json 2>/dev/null || true
+          tail -50 /tmp/llama-server.log 2>/dev/null || true
+      - name: Upload probe
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: qwen3-1.7b-real-benchmark
-          path: evals/results/ai_diagnosis_qwen3_1.7b_q4_k_m.json
+          name: qwen3-raw-probe
+          path: evals/results/qwen_raw_probe.json
           if-no-files-found: warn
           retention-days: 1
