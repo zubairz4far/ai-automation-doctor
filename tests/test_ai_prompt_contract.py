@@ -52,9 +52,10 @@ def test_prompt_defines_boundary_rules_without_baseline_anchoring():
     system_prompt = captured["messages"][0]["content"]
     user_context = json.loads(captured["messages"][1]["content"])
 
-    assert "configuration rather than data_mapping" in system_prompt
+    assert "configuration takes precedence over data_mapping" in system_prompt
     assert "webhook rather than network" in system_prompt
     assert "Opaque vendor/internal/policy codes" in system_prompt
     assert "do not invent evidence to avoid unknown" in system_prompt
+    assert "Never return an empty evidence array" in system_prompt
     assert "deterministic_baseline" not in user_context
     assert "retry_safe" not in json.dumps(user_context)

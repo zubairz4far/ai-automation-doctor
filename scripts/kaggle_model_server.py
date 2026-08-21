@@ -9,8 +9,8 @@ from typing import Any
 
 import torch
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
 from peft import PeftModel
+from pydantic import BaseModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 BASE_MODEL = os.getenv("BASE_MODEL", "Qwen/Qwen3-1.7B")
@@ -70,10 +70,10 @@ app = FastAPI(
 
 
 def _render_prompt(messages: list[dict[str, Any]]) -> str:
-    kwargs = dict(
-        tokenize=False,
-        add_generation_prompt=True,
-    )
+    kwargs = {
+        "tokenize": False,
+        "add_generation_prompt": True,
+    }
     try:
         return _tokenizer.apply_chat_template(
             messages,
