@@ -1,0 +1,393 @@
+{
+  "dataset": "evals/ai_diagnosis_v1.jsonl",
+  "model": "Qwen/Qwen3-1.7B",
+  "cases": 32,
+  "baseline_accuracy": 0.125,
+  "baseline_unknown_rate": 1.0,
+  "ai_accuracy": 0.9375,
+  "ai_accuracy_delta_pp": 81.25,
+  "schema_validity_rate": 1.0,
+  "schema_failure_rate": 0.0,
+  "provider_failure_rate": 0.0,
+  "ai_accuracy_on_valid_outputs": 0.9375,
+  "per_class": {
+    "authentication": {
+      "cases": 4,
+      "valid_outputs": 4,
+      "correct": 4,
+      "overall_accuracy": 1.0,
+      "accuracy_on_valid_outputs": 1.0
+    },
+    "configuration": {
+      "cases": 4,
+      "valid_outputs": 4,
+      "correct": 3,
+      "overall_accuracy": 0.75,
+      "accuracy_on_valid_outputs": 0.75
+    },
+    "data_mapping": {
+      "cases": 4,
+      "valid_outputs": 4,
+      "correct": 4,
+      "overall_accuracy": 1.0,
+      "accuracy_on_valid_outputs": 1.0
+    },
+    "network": {
+      "cases": 4,
+      "valid_outputs": 4,
+      "correct": 4,
+      "overall_accuracy": 1.0,
+      "accuracy_on_valid_outputs": 1.0
+    },
+    "rate_limit": {
+      "cases": 4,
+      "valid_outputs": 4,
+      "correct": 4,
+      "overall_accuracy": 1.0,
+      "accuracy_on_valid_outputs": 1.0
+    },
+    "timeout": {
+      "cases": 4,
+      "valid_outputs": 4,
+      "correct": 4,
+      "overall_accuracy": 1.0,
+      "accuracy_on_valid_outputs": 1.0
+    },
+    "unknown": {
+      "cases": 4,
+      "valid_outputs": 4,
+      "correct": 3,
+      "overall_accuracy": 0.75,
+      "accuracy_on_valid_outputs": 0.75
+    },
+    "webhook": {
+      "cases": 4,
+      "valid_outputs": 4,
+      "correct": 4,
+      "overall_accuracy": 1.0,
+      "accuracy_on_valid_outputs": 1.0
+    }
+  },
+  "details": [
+    {
+      "id": "ai-auth-01",
+      "expected_class": "authentication",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "authentication",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-auth-02",
+      "expected_class": "authentication",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "authentication",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-auth-03",
+      "expected_class": "authentication",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "authentication",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-auth-04",
+      "expected_class": "authentication",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "authentication",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-rate-01",
+      "expected_class": "rate_limit",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "rate_limit",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-rate-02",
+      "expected_class": "rate_limit",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "rate_limit",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-rate-03",
+      "expected_class": "rate_limit",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "rate_limit",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-rate-04",
+      "expected_class": "rate_limit",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "rate_limit",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-timeout-01",
+      "expected_class": "timeout",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "timeout",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-timeout-02",
+      "expected_class": "timeout",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "timeout",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-timeout-03",
+      "expected_class": "timeout",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "timeout",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-timeout-04",
+      "expected_class": "timeout",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "timeout",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-network-01",
+      "expected_class": "network",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "network",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-network-02",
+      "expected_class": "network",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "network",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-network-03",
+      "expected_class": "network",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "network",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-network-04",
+      "expected_class": "network",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "network",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-mapping-01",
+      "expected_class": "data_mapping",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "data_mapping",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-mapping-02",
+      "expected_class": "data_mapping",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "data_mapping",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-mapping-03",
+      "expected_class": "data_mapping",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "data_mapping",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-mapping-04",
+      "expected_class": "data_mapping",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "data_mapping",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-webhook-01",
+      "expected_class": "webhook",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "webhook",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-webhook-02",
+      "expected_class": "webhook",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "webhook",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-webhook-03",
+      "expected_class": "webhook",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "webhook",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-webhook-04",
+      "expected_class": "webhook",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "webhook",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-config-01",
+      "expected_class": "configuration",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "configuration",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-config-02",
+      "expected_class": "configuration",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "data_mapping",
+      "ai_ok": false,
+      "error_kind": null
+    },
+    {
+      "id": "ai-config-03",
+      "expected_class": "configuration",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "configuration",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-config-04",
+      "expected_class": "configuration",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": false,
+      "ai_class": "configuration",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-unknown-01",
+      "expected_class": "unknown",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": true,
+      "ai_class": "unknown",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-unknown-02",
+      "expected_class": "unknown",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": true,
+      "ai_class": "unknown",
+      "ai_ok": true,
+      "error_kind": null
+    },
+    {
+      "id": "ai-unknown-03",
+      "expected_class": "unknown",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": true,
+      "ai_class": "configuration",
+      "ai_ok": false,
+      "error_kind": null
+    },
+    {
+      "id": "ai-unknown-04",
+      "expected_class": "unknown",
+      "baseline_class": "unknown",
+      "baseline_confidence": 0.35,
+      "baseline_ok": true,
+      "ai_class": "unknown",
+      "ai_ok": true,
+      "error_kind": null
+    }
+  ]
+}
