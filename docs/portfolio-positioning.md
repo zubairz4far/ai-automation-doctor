@@ -33,3 +33,7 @@ The project demonstrates FastAPI service design, structured LLM boundaries, eval
 ## Interview summary
 
 The key design decision was to keep the model outside the authority boundary. The model can improve diagnosis for difficult failures, but retry safety, patch generation, approval, and side effects remain deterministic and auditable. A blind evaluation also showed that the base Qwen3-1.7B model outperformed the existing tool-calling QLoRA adapter for this diagnosis task, so the project documents that result instead of forcing a fine-tuned-model superiority claim.
+
+## Related business work
+
+The project is maintained by **Zubair Zafar**, co-founder of [Pixelense](https://pixelense.com/), a human-led AI product photography and ecommerce visual-production studio.
