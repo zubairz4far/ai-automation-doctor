@@ -76,18 +76,40 @@ class N8NClient:
         original_execution_id: str,
         workflow_id: str,
         limit: int = 100,
+        *,
+        max_pages: int = 5,
     ) -> dict[str, Any] | None:
-        """Find evidence of an already-created retry without starting another retry."""
-        payload = self.list_executions(limit=limit, workflow_id=workflow_id)
-        executions = payload.get("data", [])
-        if not isinstance(executions, list):
-            return None
-        for execution in executions:
-            if not isinstance(execution, dict):
-                continue
-            retry_of = execution.get("retryOf")
-            if retry_of is not None and str(retry_of) == original_execution_id:
-                return execution
+        """Search bounded metadata pages for a retry without starting a new execution.
+
+        A missing result is *not* proof that no retry happened: callers must
+        fail closed rather than issuing another retry after a crash.
+        """
+        if max_pages < 1:
+            raise ValueError("max_pages must be positive")
+        cursor: str | None = None
+        seen_cursors: set[str] = set()
+        for _ in range(max_pages):
+            payload = self.list_executions(limit=limit, cursor=cursor, workflow_id=workflow_id)
+            executions = payload.get("data", [])
+            if not isinstance(executions, list):
+                return None
+            for execution in executions:
+                if not isinstance(execution, dict):
+                    continue
+                retry_of = execution.get("retryOf")
+                execution_workflow = execution.get("workflowId")
+                if (
+                    retry_of is not None
+                    and str(retry_of) == original_execution_id
+                    and (execution_workflow is None or str(execution_workflow) == workflow_id)
+                ):
+                    return execution
+
+            next_cursor = payload.get("nextCursor")
+            if not isinstance(next_cursor, str) or not next_cursor or next_cursor in seen_cursors:
+                return None
+            seen_cursors.add(next_cursor)
+            cursor = next_cursor
         return None
 
     def get_workflow(self, workflow_id: str) -> dict[str, Any]:
